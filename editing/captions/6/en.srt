@@ -1,0 +1,2060 @@
+1
+00:00:59,089 --> 00:01:09,641
+Michael, welcome to my channel. Today we are going to speak
+about float and double and how these two major abstractions
+
+2
+00:01:09,841 --> 00:01:17,231
+and implementations affect other programmers' lives. So,
+please, introduce yourself. Thank you. It's very
+
+3
+00:01:17,271 --> 00:01:23,733
+nice to be here. Thank you for inviting me, Nikita. My name is
+Michael Overton. I'm a professor of computer science and
+
+4
+00:01:23,773 --> 00:01:34,437
+math at NYU, New York University in New York. I've been there
+my whole career. And it's not my primary interest, but one of
+
+5
+00:01:34,517 --> 00:01:41,059
+my interests has been floating-point arithmetic for a long
+time, mainly because I got into that because I was teaching
+
+6
+00:01:41,099 --> 00:01:46,781
+numerical computing in the computer science department,
+and I was really interested in explaining to the students
+
+7
+00:01:46,881 --> 00:01:54,623
+much more about how the computing worked instead of The
+typical thing in a numerical analysis class in the math
+
+8
+00:01:54,663 --> 00:01:58,885
+department is you spend about 15 minutes talking about
+that, and then you talk about all these mathematical
+
+9
+00:01:58,945 --> 00:02:05,288
+methods. But actually, the details of the computing are
+very interesting, especially to computer science
+
+10
+00:02:05,328 --> 00:02:12,291
+students. So I ended up writing notes, and then that turned
+into a small book that I wrote that was published for SIAM,
+
+11
+00:02:12,931 --> 00:02:22,675
+Society for Industrial Applied Math, in 2001. And then,
+well, I left that book. I mean, I used the book over many years
+
+12
+00:02:22,715 --> 00:02:29,797
+but didn't really look back at it much over the last 20 years
+until recently I had the opportunity to write a second
+
+13
+00:02:29,857 --> 00:02:38,362
+edition because so much has changed since 2001. Yeah, that
+you won't know yet. So much has changed since 2001. The basic
+
+14
+00:02:38,382 --> 00:02:45,188
+principles are the same, but technology, of course, has
+totally changed. And so I'm actually pretty close to
+
+15
+00:02:45,388 --> 00:02:54,035
+finishing the second edition, which will be published by
+SIAM, well, presumably in 2025. Oh, great news. Can you
+
+16
+00:02:54,055 --> 00:03:04,041
+please explain a little bit for the audience, what did
+exactly change? Maybe it would be better to first explain
+
+17
+00:03:04,081 --> 00:03:11,667
+what happened in 1985 with the original floating point
+standard. If we go back further in history, and then we'll
+
+18
+00:03:11,707 --> 00:03:19,853
+come back to the present later, if you go all the way back,
+floating point was actually first developed by Konrad Zuse
+
+19
+00:03:19,873 --> 00:03:32,984
+during World War II in Germany. He actually built a binary
+floating-point arithmetic computer. It wasn't
+
+20
+00:03:33,024 --> 00:03:38,059
+electronic, though. It was electromechanical. And then
+later, the first electronic computers were developed.
+
+21
+00:03:38,063 --> 00:03:47,079
+There were a lot of people, of course, who were involved in
+this whole process post-war, particularly von Neumann and
+
+22
+00:03:47,139 --> 00:03:55,056
+Turing. And then various companies, of course, started
+building electronic computers and marketing them,
+
+23
+00:03:55,058 --> 00:04:03,467
+particularly IBM. There were all these different ways of
+doing computer arithmetic. It was very confusing because
+
+24
+00:04:03,507 --> 00:04:10,529
+you might run a program, say Fortran in those days, a Fortran
+program on one computer, an IBM computer, and you might get
+
+25
+00:04:10,589 --> 00:04:19,392
+quite different results from if you ran it on another
+computer because the way the arithmetic was implemented on
+
+26
+00:04:19,412 --> 00:04:27,697
+the computer was quite different. There were a lot of people
+who were concerned about this. The The floating point
+
+27
+00:04:27,737 --> 00:04:36,288
+standard was finally published in 1985 after about five
+years of work. This was back actually soon after I was a grad
+
+28
+00:04:36,308 --> 00:04:46,196
+student. I wasn't involved in that, but some of my
+colleagues and close friends were, and particularly
+
+29
+00:04:46,637 --> 00:04:54,579
+Professor Velvel Kahan of Berkeley, who led the whole
+process. He was also involved in designing the
+
+30
+00:04:54,739 --> 00:05:02,501
+floating-point chip for the new, at that time, new Intel
+8087, which was the floating-point chip. It was actually a
+
+31
+00:05:02,921 --> 00:05:12,944
+floating-point coprocessor that worked along with the
+8088 that they were developing. And Kahan was heavily
+
+32
+00:05:12,984 --> 00:05:21,109
+involved in the design of that, and a lot of the same ideas
+were adopted by the Standard, which was published in 1985 by
+
+33
+00:05:21,129 --> 00:05:31,594
+IEEE, and then adopted internationally as well. And so what
+happened was that the Standard had an enormous impact,
+
+34
+00:05:32,155 --> 00:05:42,084
+because at the time, there were various so-called
+mainframe computers, VAX, DECVAX, HP, IBM, I already
+
+35
+00:05:42,088 --> 00:05:49,223
+mentioned various others. Many of those names have gone
+now. They were all doing their own thing. None of them really
+
+36
+00:05:49,243 --> 00:05:56,286
+wanted to change what they were doing. But then what
+happened was that the personal computers took off like
+
+37
+00:05:56,326 --> 00:06:05,331
+crazy, particularly with the Intel chips, which were
+adopted by IBM and the IBM PC. And then all the other
+
+38
+00:06:05,591 --> 00:06:15,072
+manufacturers of microprocessor chips that were used in
+PCs, particularly Motorola, they all adopted the same
+
+39
+00:06:15,088 --> 00:06:22,504
+standard, with the same standard arithmetic. And
+eventually the mainframes all faded away, like the big IBM
+
+40
+00:06:22,544 --> 00:06:28,625
+machines, which totally dominated computing in the 60s and
+70s. People weren't using them so much anymore. People
+
+41
+00:06:28,685 --> 00:06:35,967
+were much more using the new Intel chips, and that continued
+to develop over the years. So the standard was hugely
+
+42
+00:06:36,027 --> 00:06:46,951
+successful. The industry really adopted the changes. But
+in terms of what's happened since, Well, the main
+
+43
+00:06:47,431 --> 00:06:58,066
+principles of the standard, which I can explain more about
+later, are still pretty much widely adopted. But those are
+
+44
+00:06:58,074 --> 00:07:08,889
+the 32-bit and the 64-bit floating-point words, the single
+and double formats. And what's happened most recently is
+
+45
+00:07:08,929 --> 00:07:19,897
+that with the massive amount of computing required by
+machine learning, the various companies manufacturing
+
+46
+00:07:19,917 --> 00:07:28,602
+the chips used by machine learning, including Google and
+NVIDIA particularly, they've started to use these shorter
+
+47
+00:07:28,662 --> 00:07:39,691
+formats, 16-bit and even 8-bit, and now even 4-bit floating
+point format, which is completely Well, inaccurate. It's a
+
+48
+00:07:39,731 --> 00:07:48,938
+sea change. Very inaccurate. Yes. Scary, one might say. We
+could talk more about that later, but yeah, back to you. So
+
+49
+00:07:48,958 --> 00:07:59,308
+yeah, thanks a lot for this very brief and deep introduction
+to the floating point history. And you mentioned that
+
+50
+00:08:00,208 --> 00:08:11,118
+basically IEEE standard had a huge impact on the industry.
+And why exactly this standard won the race among many
+
+51
+00:08:11,178 --> 00:08:16,969
+others? Well, it was the only standard, actually. What
+happened was that there were all these different
+
+52
+00:08:17,189 --> 00:08:24,372
+manufacturers doing their own thing, and the standard
+said, no, let's all do this. And there wasn't any competing
+
+53
+00:08:24,412 --> 00:08:37,178
+standard. And as I said, because of the phenomenal growth of
+the PC industry and the chips that were used, excuse me, in
+
+54
+00:08:37,218 --> 00:08:46,002
+that industry, particularly the Intel chips and the
+Motorola chips, they just all adopted the standard. They
+
+55
+00:08:46,183 --> 00:08:55,006
+all agreed, hey, this is a good thing. Then people's
+programs will run as expected on different machines. And so
+
+56
+00:08:55,008 --> 00:09:01,542
+there wasn't actually a competing standard. What there
+was, was there was a lot of debate in the committee, which
+
+57
+00:09:01,742 --> 00:09:09,444
+included academic computer scientists led by Kahan, and
+also a lot of industry people from all the big names in
+
+58
+00:09:09,484 --> 00:09:16,787
+industry at the time, IBM, HP, and so forth, DEC. And they all
+argued, of course, they didn't all agree on what should be
+
+59
+00:09:16,807 --> 00:09:26,547
+done at first. But Kahan's viewpoint was, well, very
+forceful, but also very well grounded in sort of theory and
+
+60
+00:09:26,927 --> 00:09:33,631
+common sense. And also another thing that helped a lot, I
+think, is that Kahan is a professor of computer science and
+
+61
+00:09:33,811 --> 00:09:42,256
+mathematics, I think, both at Berkeley. But also he came
+from Toronto, where he had actually a lot of training in EE,
+
+62
+00:09:42,276 --> 00:09:47,279
+electrical engineering, as well. So he knew what he was
+talking about when he began, when he talked about, you know,
+
+63
+00:09:47,299 --> 00:09:57,739
+hardware. He wasn't some guy who didn't know any of that
+stuff. In brief, they listened to him. I think that the
+
+64
+00:09:57,759 --> 00:10:04,905
+standard has a lot of great stuff inside. But I want to also
+highlight some problems that might be hidden in this
+
+65
+00:10:04,945 --> 00:10:11,951
+standard. Do you have any existing examples? For example,
+in your book, you mentioned that gradual underflow is the
+
+66
+00:10:11,991 --> 00:10:17,922
+most controversial part of the standard. It was, but one
+thing that's changed is that it's no longer controversial.
+
+67
+00:10:17,942 --> 00:10:24,827
+It's pretty much been adopted in hardware. What happened
+was that in order to—well, maybe we should explain first for
+
+68
+00:10:24,987 --> 00:10:35,174
+our listeners what gradual underflow is. In a floating
+point format, you only have, let's say, 32 bits. Let's
+
+69
+00:10:35,214 --> 00:10:42,198
+explain first how, before we get into underflow, let's
+explain how these 32 bits are used. So there's one bit that's
+
+70
+00:10:42,218 --> 00:10:51,483
+needed for the sign of the number, plus or minus. So now
+you're down to 31. Now, the format they agreed to adopt for
+
+71
+00:10:51,523 --> 00:11:02,568
+various reasons used the next eight bits to represent the
+exponent in the floating point. So a floating point is a
+
+72
+00:11:02,889 --> 00:11:11,358
+system sometimes compared with scientific notation,
+where you have, let's say, the simplest example, let's say,
+
+73
+00:11:12,936 --> 00:11:19,922
+Let's take the number 16. 16 is 2 to the power of 4. Well, in
+binary, because we always use binary in floating point,
+
+74
+00:11:19,962 --> 00:11:25,787
+that's another story. There is actually decimal point,
+decimal floating point two, that is used in business. But
+
+75
+00:11:25,847 --> 00:11:32,032
+scientifically, in scientific applications, by far the
+majority of applications, it's binary floating point
+
+76
+00:11:33,017 --> 00:11:42,203
+that's used. And so the number 16 in binary is 1.0000, et
+cetera, as many zeros as you want, times 2 to the power of 4,
+
+77
+00:11:42,417 --> 00:12:04,052
+16. 16 is 2 times 2 times 2 times 2, 16. So the 4 is stored in the
+exponent field of the 32-bit word. that you have up to 8 bits,
+
+78
+00:12:04,072 --> 00:12:11,366
+so you can go up to about an exponent of something like 127,
+because you have to allow for negative exponents as well.
+
+79
+00:12:12,965 --> 00:12:18,927
+And then the remaining 23 bits in the word, right, because
+there are 32 but we've used 1 to the sine, 8 for the exponent,
+
+80
+00:12:19,447 --> 00:12:26,809
+that's for the so-called significand. So in the case of 16,
+because it's the exact power of 2, it's just 1.000 and then a
+
+81
+00:12:26,849 --> 00:12:36,992
+bunch of zeros. But a more complicated number like pi, of
+course, or even something like, say, almost any number
+
+82
+00:12:37,032 --> 00:12:44,714
+really, is not going to be 1.000, but it's going to be, you
+know, it's going to have a bunch of ones and zeros in the
+
+83
+00:12:44,754 --> 00:12:53,376
+expansion. So you have 23 bits for this significand, plus
+another bit that's so-called hidden, but let's leave that
+
+84
+00:12:53,416 --> 00:13:00,419
+aside for the moment. And then you've got these eight bits
+for the exponent. And the exponent, as I said, it ranges from
+
+85
+00:13:00,919 --> 00:13:08,102
+basically from something like minus 127 to plus 127.
+There's a couple of special exponents to represent special
+
+86
+00:13:08,162 --> 00:13:16,706
+numbers like zero and infinity, which is another interesting
+number. But the business of the gradual underflow is what
+
+87
+00:13:16,746 --> 00:13:26,109
+happens when a number gets down to 2 to the minus 126, I think
+it is, below that, you might say, well, look, we can't store a
+
+88
+00:13:26,149 --> 00:13:32,991
+number that's smaller than that, so we're going to have to
+drop it down to zero. That would be not gradual underflow,
+
+89
+00:13:33,032 --> 00:13:38,873
+but abrupt underflow. But gradual underflow says, well,
+no, actually, by being a bit more clever, we can actually
+
+90
+00:13:38,893 --> 00:13:48,477
+store 2 to the minus 127, 2 to the minus 128, all the way down to
+It's actually 2 to the minus 149 in so-called single
+
+91
+00:13:48,517 --> 00:13:55,092
+precision, the 32-bit format. And that's what gradual
+underflow is. Now, as I said, it was controversial because
+
+92
+00:13:56,014 --> 00:14:04,024
+implementing arithmetic with numbers that might be
+so-called subnormal, that means they've dropped below
+
+93
+00:14:04,084 --> 00:14:12,209
+that underflow threshold down into the subnormal range
+using gradual underflow, using having arithmetic that
+
+94
+00:14:12,249 --> 00:14:18,584
+works for those kinds of numbers as well as the ordinary
+floating point numbers, the normalized ones. well, it's
+
+95
+00:14:18,624 --> 00:14:24,068
+more expensive, more complicated, and many of the
+manufacturers just didn't want to do it. DEC, in
+
+96
+00:14:24,108 --> 00:14:32,573
+particular, was quite opposed to it. But Intel was highly in
+favor, because of Kahan's influence, probably. But
+
+97
+00:14:32,593 --> 00:14:39,938
+eventually, everybody realized, okay, well, they were
+allowed to do it in software to conform with the standard,
+
+98
+00:14:39,998 --> 00:14:46,982
+but that was a problem, because then the machines would
+really, then the computations would really slow down. So
+
+99
+00:14:47,202 --> 00:14:56,625
+eventually, pretty much everyone adopted the hardware
+gradual underflow. So that's actually not controversial
+
+100
+00:14:56,685 --> 00:15:04,208
+anymore, but it was back then. So that's one of the things
+that's changed for the better. Maybe there are some other
+
+101
+00:15:04,248 --> 00:15:13,932
+examples. Well, the biggest one right now is this short
+format thing for machine learning. Can you tell a little bit
+
+102
+00:15:13,972 --> 00:15:25,788
+more about that, please? Sure. So the standard defines
+several floating point formats. 32-bit format, which is a
+
+103
+00:15:26,088 --> 00:15:35,151
+so-called single precision. In C that would be called
+float. The 64-bit double format, double precision, in C
+
+104
+00:15:35,171 --> 00:15:39,852
+that would be called double. I think in Python it's called
+float, right? This is what you're apparently interested
+
+105
+00:15:39,952 --> 00:15:47,155
+in. Because Python, at least the original Python anyway,
+works just with the double precision 64-bit floating point
+
+106
+00:15:47,175 --> 00:15:57,529
+numbers. As I understand, please correct me if I'm wrong.
+Yeah, that's correct. Yeah. OK, so then what about longer,
+
+107
+00:15:57,569 --> 00:16:04,934
+what about shorter formats? Well, in the 1985 format, 1985
+standard, they only introduced single and double, and they
+
+108
+00:16:04,954 --> 00:16:12,064
+said to be conformant with the standard, you have to
+implement single. And you can implement double, too, if you
+
+109
+00:16:12,068 --> 00:16:20,643
+want. And they recommended an extended format, but that's
+not so interesting. So the standard is supposed to be
+
+110
+00:16:20,703 --> 00:16:30,483
+revised every 10 years, because if it isn't, it expires.
+That's an IEEE rule. So that means it should have been
+
+111
+00:16:30,543 --> 00:16:36,664
+revised in 2005. Actually, the revision finally appeared
+in 2008 after a lot of discussion. There were quite a lot of
+
+112
+00:16:36,704 --> 00:16:46,527
+changes in 2008. So they introduced a 128-bit format, which
+is sometimes called quadruple precision. You've got
+
+113
+00:16:46,567 --> 00:16:54,449
+single, double, quadruple, 32, 64, 128. And they also
+introduce half-precision, which is 16-bit. But that's
+
+114
+00:16:54,489 --> 00:17:03,273
+getting kind of short, because you still need one bit for the
+sign. Now you have, I think, in the IEEE half-precision, you
+
+115
+00:17:03,313 --> 00:17:09,756
+have five bits for the exponent, which means the exponent
+can only go up to 2 to the 16, right, from 2 to the minus 16 to 2 to
+
+116
+00:17:09,796 --> 00:17:21,981
+the plus 16, roughly. I think that leaves 10 bits for the
+significand, plus one bit that's so-called hidden, which
+
+117
+00:17:22,041 --> 00:17:32,847
+is in every number except zero. OK, so a 16-bit format was
+introduced. So that's called half-precision, usually, or
+
+118
+00:17:33,948 --> 00:17:40,793
+the number, the names were also changed. So in 2008, instead
+of single and double, they started calling it binary 32 and
+
+119
+00:17:40,853 --> 00:17:57,576
+binary 64. Often that's abbreviated to FP32 or FP64. And
+then binary 128 and binary 16, or BF16, I mean FP16. But And
+
+120
+00:17:57,596 --> 00:18:06,022
+then in 2019, there was another revision, again, slightly
+late, one year late, but that wasn't a major revision. It
+
+121
+00:18:06,421 --> 00:18:14,345
+introduced a few new things and fixed a couple of bugs, but it
+wasn't super major. But meanwhile, there was a big change
+
+122
+00:18:14,385 --> 00:18:22,309
+between 2008 and 2016, and that's that machine learning
+took off. And what happened is it was Google first that said,
+
+123
+00:18:22,329 --> 00:18:29,057
+OK, well, let's do… Well, it wasn't only Google. A bunch of
+people working in machine learning were saying, hey, let's
+
+124
+00:18:29,158 --> 00:18:43,554
+use 16-bit format because when you're saying multiplying
+two 16-bit numbers, it's much It's a process that requires
+
+125
+00:18:43,854 --> 00:18:55,764
+much less power than multiplying 32-bit numbers. And so you
+save power and you save space by having shorter formats.
+
+126
+00:18:57,405 --> 00:19:02,567
+That wasn't so much of an issue before machine learning came
+along. But what's happened with machine learning is
+
+127
+00:19:02,587 --> 00:19:07,708
+there's just enormous amounts of computation involved.
+And the reason that machine learning has suddenly been so
+
+128
+00:19:07,769 --> 00:19:15,091
+successful is because that's now possible with the
+technology. It used to be that you couldn't do these kinds of
+
+129
+00:19:15,171 --> 00:19:21,996
+massive computations. It was just much too expensive. but
+with computers becoming faster and faster and cheaper and
+
+130
+00:19:22,036 --> 00:19:31,125
+cheaper, now you can. The whole idea of neural nets, which
+was promoted by Yann LeCun and others back even before the
+
+131
+00:19:31,165 --> 00:19:40,871
+turn of the century, I think, he was sort of speaking, you
+know, he was sort of not quite alone in the wilderness, but
+
+132
+00:19:40,911 --> 00:19:47,374
+people weren't convinced that neural nets could ever work.
+And then by about 2010 or so, it became very clear they were
+
+133
+00:19:47,415 --> 00:19:56,319
+amazingly effective. And by 2015 or 16, companies like
+Google, who were developing their TPU, the Tensor
+
+134
+00:19:56,339 --> 00:20:06,304
+Processing Unit, realized that, okay, if we use 16-bit,
+that's going to be much faster and cheaper. But in fact,
+
+135
+00:20:06,344 --> 00:20:13,607
+let's introduce a new format, they said, because they
+didn't like binary 16 because the exponent range is so small
+
+136
+00:20:13,687 --> 00:20:23,041
+from 2 to the minus 16 to 2 to the 16. So what they introduced
+was something that they called bfloat16. B stands for
+
+137
+00:20:23,047 --> 00:20:32,068
+brain, Google brain. And in that format, you have one bit for
+the sign still. But now you have eight bits for the exponent,
+
+138
+00:20:32,072 --> 00:20:44,207
+which is the same as with IEEE single precision. And then,
+OK, so that uses up nine of your 16 bits. And so what have you
+
+139
+00:20:44,247 --> 00:20:53,773
+got left? You've got seven left now, plus one hidden bit,
+which is not even enough to represent more than two decimal
+
+140
+00:20:53,813 --> 00:21:05,603
+digits of accuracy. That might not be so obvious, but we
+could talk about that later if that's of interest. People
+
+141
+00:21:05,623 --> 00:21:13,009
+were a little shocked that there's so little accuracy in the
+numbers, but they said, look, hey, this is machine
+
+142
+00:21:13,049 --> 00:21:22,528
+learning. We're doing massive amounts of it, and there's
+tons of redundancy, and we don't need high accuracy. You
+
+143
+00:21:22,968 --> 00:21:28,231
+can't argue with the fact that machine learning has been
+enormously successful, so it apparently works. You
+
+144
+00:21:28,251 --> 00:21:36,734
+wouldn't want to be doing that for scientific problems that
+require highly accurate computations. But in machine
+
+145
+00:21:36,774 --> 00:21:46,098
+learning, it seems that's not necessary. So they
+introduced BFLOAT16, they built their own chips. They were
+
+146
+00:21:46,138 --> 00:21:56,001
+not exactly secretive about it. They did publish this. And
+then other manufacturers started following the same
+
+147
+00:21:56,641 --> 00:22:10,196
+format, including NVIDIA and Intel, which I guess is the two
+biggest players making chips at this point. Well, maybe one
+
+148
+00:22:10,216 --> 00:22:23,467
+or two others, but anyway, those are certainly two very
+major ones. So that's fine. Then people said, well, look, if
+
+149
+00:22:24,188 --> 00:22:30,211
+16 bits, why not 8 bits? So a bunch of researchers started
+using 8 bits, first just simulating it because they didn't
+
+150
+00:22:30,231 --> 00:22:39,117
+have 8-bit hardware. But then again, the manufacturers
+started building the 8-bit hardware. So both Intel and
+
+151
+00:22:39,177 --> 00:22:46,862
+NVIDIA anNaNced 8-bit floating-point chips. Well,
+that's getting really short. And now the latest thing is
+
+152
+00:22:47,082 --> 00:22:56,068
+just a few months ago, I think it was in April or so, NVIDIA
+anNaNced that they're making 4-bit floating point, which
+
+153
+00:22:56,168 --> 00:23:05,294
+is kind of shocking. I mean, that's one bit. I don't know how
+to even imagine their binary layout. So the first bit is
+
+154
+00:23:05,394 --> 00:23:17,242
+obviously for sign, then two bits, I guess, is for exponent
+and one bit for mantissa. Yeah, mantissa is another word for
+
+155
+00:23:17,282 --> 00:23:25,647
+significand. That's fine, just for our audience. Yeah,
+that's right, plus the one hidden bit, which gives you two
+
+156
+00:23:25,667 --> 00:23:31,311
+bits for the significand. I'm actually not sure if it's
+that. That's probably right, or maybe it's one less bit for
+
+157
+00:23:31,331 --> 00:23:38,995
+the exponent. I'm not sure. I didn't look it up yet. I'm
+planning to do that very soon. Anyway, where's the limit?
+
+158
+00:23:40,036 --> 00:23:48,587
+Yeah, that's quite interesting. You've also mentioned
+that hidden bit quite a lot. So can you please explain what hidden bit is?
+
+159
+00:23:48,727 --> 00:23:56,069
+Every number, every binary,
+every number except for zero has a leading one, right?
+
+160
+00:23:57,070 --> 00:23:59,069
+Because you can always, the whole point
+of floating point
+
+161
+00:23:59,352 --> 00:24:06,937
+is you normalize, you shift the binary point so that it floats
+to the position. That's why it's called floating point. It
+
+162
+00:24:06,997 --> 00:24:13,962
+floats to the position where the one is in front before the
+binary point and then zero, zero, zero.
+
+163
+00:24:14,007 --> 00:24:18,723
+Well, the thing is, all numbers,
+whether it's pi or the square root of two or one-tenth,
+
+164
+00:24:19,801 --> 00:24:27,007
+One-tenth is an interesting one. Let's do that one.
+One-tenth is 1.100110011001100 dot dot dot times 2 to the
+
+165
+00:24:27,027 --> 00:24:42,879
+minus 4, if I'm remembering correctly. I have to use a
+calculator for that. That's one-tenth as it turns out.
+
+166
+00:24:42,899 --> 00:24:57,383
+Okay. Roughly one-tenth, yeah. Yeah, exactly, if you go on
+forever. But again, you see, it starts with a 1. Well, of
+
+167
+00:24:57,404 --> 00:25:03,829
+course, it starts with a 1, because I floated the binary
+point so that there would be a 1 in the front. I didn't put
+
+168
+00:25:04,067 --> 00:25:12,096
+0.0001100. I could have done, but the whole point of
+floating point is you want to float that binary point to get
+
+169
+00:25:12,137 --> 00:25:21,206
+the one in front, and then you have times a power. But that one
+in front, why do we need to store it? We know it's a one, so
+
+170
+00:25:21,226 --> 00:25:28,093
+that's the hidden bit. Now, before the standard, actually
+it was Vax who first started doing this, the DEC-VAX, but
+
+171
+00:25:28,133 --> 00:25:36,884
+before the DEC-VAX, People did store it, and the reason is
+they needed a way to write zero. And zero is 0.000. You can't
+
+172
+00:25:36,965 --> 00:25:43,473
+float the binary point for zero to get a one in front. There is
+no one. It's all zeros. But you see, you can represent zero
+
+173
+00:25:43,533 --> 00:25:54,523
+instead through a special exponent. So going back again to
+the 32-bit format, I said the numbers, the exponents are
+
+174
+00:25:54,543 --> 00:26:04,289
+something like minus 126 to plus 127, but that leaves a
+couple of numbers free, and the number which corresponds to
+
+175
+00:26:04,329 --> 00:26:16,676
+minus 127 corresponds to the zero. number, and at the other
+end of the range, the exponent 128, I think it is, or maybe
+
+176
+00:26:16,756 --> 00:26:29,096
+it's 127, corresponds to infinity. Because in IEEE
+arithmetic, one divided by zero is infinity. Yeah. But this
+
+177
+00:26:29,156 --> 00:26:36,072
+is a very interesting part. Some languages treat this as
+infinity, but some languages do rise an exception. For
+
+178
+00:26:36,074 --> 00:26:44,204
+example, CPython does that. It rises zero division
+exception for this case. So how do you feel about this little
+
+179
+00:26:45,604 --> 00:26:50,821
+misinterpretation of the standard? Well, that's a very
+good question. I don't think that is a misinterpretation.
+
+180
+00:26:50,841 --> 00:27:01,208
+The point is that the number becomes infinity, but
+according to the standard, an exception, when you divide by
+
+181
+00:27:01,268 --> 00:27:09,914
+zero, that's an exception. This is a divide by zero
+exception. What's happening in CPython then is that
+
+182
+00:27:10,194 --> 00:27:25,034
+CPython is trapping the exception and saying, OK, stop. The
+exception is thrown by the chip. There are various
+
+183
+00:27:25,004 --> 00:27:32,142
+exceptions in floating point. One of them is division by
+zero. Another one is overflow, where you make the number so
+
+184
+00:27:32,202 --> 00:27:39,184
+big that it no longer fits. Another one is underflow, where
+you make it so small that it no longer fits, even after
+
+185
+00:27:39,244 --> 00:27:44,966
+running through all. Actually, the underflow flag is
+tremendously complicated because it's set, I think, even
+
+186
+00:27:44,986 --> 00:27:49,727
+when you go into the gradual underflow range. You'd have to
+look at my book, especially the second edition, to get all
+
+187
+00:27:49,767 --> 00:27:59,191
+this clear. We'll put a link into the description. Yeah, I
+don't have the second edition ready yet, but I will send you a
+
+188
+00:27:59,231 --> 00:28:09,579
+copy as soon as it's ready. Oh, thank you. Awesome. But it
+will be published by SIAM, hopefully in 2025. I'm getting
+
+189
+00:28:09,599 --> 00:28:22,204
+pretty close. Yeah, so there's five exceptions. Divide by
+0, overflow, underflow. Another interesting one is
+
+190
+00:28:22,945 --> 00:28:39,087
+invalid operation. So, zero over zero is an invalid operation and
+generates a NaN, which is not a number. which is another
+
+191
+00:28:39,093 --> 00:28:50,714
+special pattern in the floating point using the maximum
+possible exponent. So again, probably CPython would trap
+
+192
+00:28:50,754 --> 00:29:03,615
+that and stop, I guess, right? But isn't there a way to set the
+compiler so that it runs with infinities and nans or not? I
+
+193
+00:29:03,635 --> 00:29:09,324
+don't think so. There might be some hidden undocumented
+flag, something like that, but I don't think there is a
+
+194
+00:29:09,364 --> 00:29:19,055
+documented way to do that. I'm surprised about that because
+there certainly is in C. And in the C stats, it took C and also
+
+195
+00:29:19,095 --> 00:29:26,032
+Fortran a long time to catch up with the standard, even
+though C had a major revision in 1999, which was long after
+
+196
+00:29:26,341 --> 00:29:31,985
+the standard was published, 14 years after. It didn't even
+mention it really, or may have mentioned it, but it didn't do
+
+197
+00:29:32,045 --> 00:29:42,044
+anything much with it. I'm sorry, I'm getting that wrong.
+That was 1989. In 1999, they finally did catch up with the
+
+198
+00:29:42,064 --> 00:29:54,517
+standard, and they made a lot of changes. The expert, the big
+expert on floating point in C is Nelson Beebe actually. So in C,
+
+199
+00:29:57,068 --> 00:30:03,044
+the normal default behavior is that you do generate
+infinities and NaNs. And this allows you to do something
+
+200
+00:30:03,084 --> 00:30:11,551
+like, there's this one example I like is the parallel
+resistance formula. So if you have, two resistors in
+
+201
+00:30:11,611 --> 00:30:19,018
+parallel. This is something that goes back to high school.
+You have this example in your book. Yes, exactly. There's
+
+202
+00:30:19,038 --> 00:30:26,445
+the example. The parallel resistance formula is where you
+have two resistors hooked up in parallel on a circuit: 1/(1/R1 + 1/R2)
+
+203
+00:30:26,866 --> 00:30:33,531
+And one of the resistors has resistance R1 and the other one R2.
+And that's the formula for the total resistor. So if they're
+
+204
+00:30:33,571 --> 00:30:40,858
+the same, if R1 and R2 are both 1, then you get 1 over 2. So the
+result is a half, because half the current goes one way and
+
+205
+00:30:40,878 --> 00:30:48,286
+half the current goes the other way. So that makes sense.
+But what if R1 is very small? Well, then you see most of the
+
+206
+00:30:48,326 --> 00:30:58,821
+current goes through the resistor R1, and then the total
+resistance is 1 over 1 over R1 plus a little bit more, which is
+
+207
+00:30:58,921 --> 00:31:07,386
+only a little bit less than R1 because most of the current
+goes through R1 when R1 is much less than R2. But what if R1 is
+
+208
+00:31:07,446 --> 00:31:16,769
+zero? Well, if you plug R1 equals zero into that formula, you
+don't allow infinities, and then it doesn't work. But if you
+
+209
+00:31:16,789 --> 00:31:26,074
+do allow infinities, you get 1 over R1 is infinity. 1 over R2
+is, say, 1. 1 plus infinity is infinity. And then 1 over
+
+210
+00:31:26,134 --> 00:31:32,977
+infinity is 0. So all the current goes through R1. There's no
+resistance in the circuit. So it makes valid scientific
+
+211
+00:31:33,037 --> 00:31:40,241
+sense. Now, of course, most people are not computing with
+parallel circuits. But there's a lot of examples like this.
+
+212
+00:31:40,681 --> 00:31:50,049
+And it's actually a very useful thing to have. So I'm pretty
+surprised that CPython doesn't allow that. Pretty much all
+
+213
+00:31:50,051 --> 00:31:59,197
+the other languages I know do. MATLAB, certainly. I will
+have to double-check that right now, because I now begin to
+
+214
+00:31:59,237 --> 00:32:08,064
+doubt myself. It may be that it's a setting you have to
+choose. I've double-checked this right now. So you cannot
+
+215
+00:32:08,124 --> 00:32:17,099
+configure CPython not to rise this error. I guess the main
+motivation for that is because Python tries to be very
+
+216
+00:32:18,005 --> 00:32:27,468
+user-friendly, and I can see a lot of use cases where
+Infinity is not very user-friendly. Do you agree with that?
+
+217
+00:32:29,035 --> 00:32:37,292
+I think it's something that's, yeah, a lot of people have
+different opinions about it. It's, yeah, certainly if you,
+
+218
+00:32:37,532 --> 00:32:42,753
+I mean, Infinity makes sense, but of course NaNs really
+don't. NaNs are basically telling you, look, it doesn't
+
+219
+00:32:42,773 --> 00:32:51,116
+make any sense. What people sometimes use NaNs for is
+initializing data and then the data that's supposed to be
+
+220
+00:32:51,156 --> 00:32:58,012
+then set to other values, and if something is still a NaN at
+the end, you know something's wrong. It's called signal and
+
+221
+00:32:58,016 --> 00:33:05,204
+NaN as far as I know. There's two kinds of NaNs, there's
+signaling NaNs and quiet NaNs, and the difference is kind of
+
+222
+00:33:05,264 --> 00:33:22,894
+complicated. I can tell you a bit if you're interested about
+the what's going on with the, let's see, did we finish up with
+
+223
+00:33:22,914 --> 00:33:28,798
+the exception? Maybe I'll just reiterate about the
+exceptions. Yeah, so there's five exceptions. There's
+
+224
+00:33:29,978 --> 00:33:35,722
+division by zero, overflow, underflow, invalid
+operation, which is something like zero over zero, or the
+
+225
+00:33:35,762 --> 00:33:42,125
+square root of minus one would be another invalid
+operation, unless you're in some kind of mode like MATLAB
+
+226
+00:33:42,145 --> 00:33:51,352
+where you allow complex numbers. And then also another
+example of an invalid operation would be infinity minus
+
+227
+00:33:51,412 --> 00:34:00,019
+infinity, because it doesn't make sense, you know, which
+one is bigger. Infinity plus infinity is infinity. The
+
+228
+00:34:00,059 --> 00:34:07,926
+fifth exception is when the result of a computation is not
+exact, an exact floating point number. But that's kind of a
+
+229
+00:34:07,966 --> 00:34:12,085
+misnomer to call that an exception, because actually
+that's what happens almost all the time. But anyway, it's
+
+230
+00:34:12,087 --> 00:34:19,165
+still called an exception for some reason. And so there's a
+flag for that too. But that's another big thing that's
+
+231
+00:34:19,225 --> 00:34:27,676
+changed is that this whole business with flags, you see, it
+used to be that setting flags was a good thing to do. And then,
+
+232
+00:34:28,337 --> 00:34:38,526
+you know, the compiler can, the runtime, the runtime
+process can check the flags and so forth. But now with all
+
+233
+00:34:38,566 --> 00:34:48,072
+these much more complicated things like multi-threading
+and so on, flags can actually kind of get in the way. This is
+
+234
+00:34:48,112 --> 00:34:56,941
+really beyond my expertise. I'm not a computer designer.
+But from what I've heard, there's not so much not so much
+
+235
+00:34:57,001 --> 00:35:04,099
+enthusiasm for setting and checking these exception flags
+anymore. But that may not be the case with CPython. It sounds
+
+236
+00:35:05,001 --> 00:35:17,838
+like maybe it's not. So what's going on with the floating
+point? Well, with the 8-bit floating point, What's
+
+237
+00:35:17,858 --> 00:35:27,569
+happened is that there's now a new IEEE committee called
+Committee P3109. The original IEEE committee, the
+
+238
+00:35:27,609 --> 00:35:38,536
+floating part committee, was called IEEE P754. And you hear
+all the time about 754 arithmetic, IEEE 754. anybody knows
+
+239
+00:35:38,817 --> 00:35:46,902
+much about floating point has heard about 754. It just means
+the IEEE floating point standard. So that was 1985. I guess
+
+240
+00:35:46,922 --> 00:35:56,147
+they've been numbering them sequentially. So now we're up
+to 3,109 for these working groups of the IEEE. But not very
+
+241
+00:35:56,187 --> 00:36:09,918
+many of them, of course, have to do with floating point. IEEE
+is a huge organization. So 3109 is a committee that was set up
+
+242
+00:36:10,058 --> 00:36:20,802
+to define, to make recommendations for standardizing
+8-bit floating point. And so I was contacting these people
+
+243
+00:36:20,882 --> 00:36:28,365
+to find out more about it. And they said, well, look, why
+don't you just join the committee? And so I did. And
+
+244
+00:36:28,445 --> 00:36:36,589
+actually, it's been extremely interesting. Oh, I didn't
+know that. Yeah, yeah. No, you wouldn't because that fact
+
+245
+00:36:36,749 --> 00:36:47,193
+hasn't been published. But the 3109 committee has now
+published an interim report, which I was involved in in a
+
+246
+00:36:47,253 --> 00:36:53,776
+tiny way, along with all the other committee members. The
+leaders of the committee, there are several leaders,
+
+247
+00:36:56,177 --> 00:37:01,094
+secretary. Well, that's not getting into the
+personalities. But anyway, there's lots of very, very
+
+248
+00:37:02,000 --> 00:37:06,883
+competent people, of course, they're mostly machine
+learning experts. But there's also floating point
+
+249
+00:37:07,023 --> 00:37:15,167
+experts. Well, of course, some of them are experts on both. I
+don't know much about machine learning, but so I'm in there
+
+250
+00:37:15,267 --> 00:37:24,351
+from the floating point side. But there's also a bunch of
+hardware people like people from Intel and Actually, I
+
+251
+00:37:24,391 --> 00:37:33,254
+don't know if there's anybody from NVIDIA on the committee,
+but definitely there is from Intel and other companies. And
+
+252
+00:37:34,077 --> 00:37:42,458
+so the P3109 committee has published an interim report.
+Now, it's not clear how much impact the 3109
+
+253
+00:37:42,458 --> 00:37:49,542
+recommendations are going to have compared with the 754
+recommendations. because the industry is moving very fast
+
+254
+00:37:50,102 --> 00:37:57,289
+and the companies are not waiting around to see what the
+committee does. Maybe we'll become standardized
+
+255
+00:37:57,369 --> 00:38:06,178
+following the committee recommendations. I guess that's
+what we hope. The recommendations right now are that with
+
+256
+00:38:06,278 --> 00:38:12,963
+only eight bids, you have to be a little more well, you have to
+be very thoughtful about what you're going to use them for.
+
+257
+00:38:13,283 --> 00:38:20,408
+Now, going back to the 32-bit and 64-bit IEEE, the original
+single and double floating point formats, which are ones
+
+258
+00:38:20,428 --> 00:38:31,835
+that are mostly used. So those ones, as I said, there's
+special representations for infinity, also minus
+
+259
+00:38:31,875 --> 00:38:40,662
+infinity, zero, but also minus zero, which is another
+complication that was also kind of controversial, because
+
+260
+00:38:41,343 --> 00:38:48,029
+if you're going to have 1 over infinity is 0, well then
+shouldn't 1 over minus infinity be minus 0? And anyway, if
+
+261
+00:38:48,033 --> 00:38:55,558
+you're going to represent 0, you've got to do something with
+a sign bit, so why should it always be the positive sign bit?
+
+262
+00:38:56,759 --> 00:39:04,622
+Why not negative? So there's actually two representations
+for zero in the original IEEE format. So there's zero and
+
+263
+00:39:04,642 --> 00:39:12,464
+there's minus zero. But then this leads to some very
+interesting unexpected behaviors because is zero equal to
+
+264
+00:39:12,504 --> 00:39:20,927
+minus zero? If you check that in a programming language like
+Python. Yeah, it is. It is, that's right. Sorry, this wasn't
+
+265
+00:39:20,967 --> 00:39:26,611
+meant to be an exam question, but you're exactly right. But
+on the other hand, is infinity equal to minus infinity?
+
+266
+00:39:26,671 --> 00:39:36,259
+Well, absolutely not. They're very different. So that
+means that A can be equal to B, but 1 over A not equal to 1 over B,
+
+267
+00:39:36,799 --> 00:39:47,307
+where A and B are 0 and minus 0. So that's kind of
+disconcerting, to say the least. But really, the choice of
+
+268
+00:39:47,367 --> 00:39:59,479
+having minus infinity really leads one to having minus 0.
+And if you're going to have 1 over 0 is infinity, then you
+
+269
+00:39:59,519 --> 00:40:06,055
+really you're kind of stuck with the idea of if you're going
+to have two infinities, you're going to need to have two
+
+270
+00:40:06,075 --> 00:40:14,036
+zeros also. Well, P3109 discussed all this. This was
+actually before I joined the committee. And the decision
+
+271
+00:40:14,401 --> 00:40:20,305
+they made was, or we made, I suppose, although I wasn't
+involved in the beginning, for better or for worse, there's
+
+272
+00:40:20,345 --> 00:40:30,647
+only going to be one zero, no minus zero in the
+recommendations. And Also, there's multiple NaNs in
+
+273
+00:40:30,767 --> 00:40:37,352
+IEEE. As you pointed out, there's signaling NaNs and quiet
+NaNs. And it's actually a lot of different NaNs, because
+
+274
+00:40:37,833 --> 00:40:43,978
+what you can do is you have all these extra bits you're not
+using anyway from the significand field corresponding to
+
+275
+00:40:43,998 --> 00:40:52,084
+the special exponent field for the NaN. And so you might as
+well use them to code the origin of the NaN. So there's a lot
+
+276
+00:40:52,104 --> 00:41:01,007
+of different NaNs in IEEE. you can't test whether one is
+equal to another. A NaN is never equal to anything, even to
+
+277
+00:41:01,013 --> 00:41:10,137
+itself. But they can still be, the bit patterns can still be
+examined. Okay, well, 3109 in the 8-bit format decided, no,
+
+278
+00:41:11,858 --> 00:41:17,742
+we don't want so many NaNs. We can't afford the space. So
+there's only gonna be one NaN also. And they're using the
+
+279
+00:41:17,902 --> 00:41:25,452
+bit pattern that normally would be used for minus zero to
+represent NaNs. So that means you've got one zero, one
+
+280
+00:41:25,472 --> 00:41:37,006
+NaN. Now, what about the infinities? two infinities, but
+one over zero is not infinity, because if it was, and then, if
+
+281
+00:41:39,421 --> 00:41:44,064
+it was, and then you took one over infinity, that would give
+you zero, but one over minus infinity would also give you
+
+282
+00:41:44,104 --> 00:41:50,208
+zero, and then you took one over that, and you'd get plus
+infinity, that really leads to confusion. So the
+
+283
+00:41:50,248 --> 00:41:56,051
+recommendation right now, I don't think this has been
+published yet in the interim report, but probably what is
+
+284
+00:41:56,071 --> 00:42:09,078
+gonna be recommended is that one over zero is NaN, not
+infinity. Oh. So that's the current proposal. It hasn't
+
+285
+00:42:09,082 --> 00:42:16,865
+been voted on yet, I don't think. What's your opinion on
+that? Because from the mathematical standpoint, I guess
+
+286
+00:42:17,045 --> 00:42:26,171
+they both do not and do make sense at the same time. Well, I
+think my opinion is the committee is right that if you're not
+
+287
+00:42:26,191 --> 00:42:34,003
+going to have minus zero, and you are going to have plus or
+minus infinity, then you should not say that 1 over is plus
+
+288
+00:42:34,043 --> 00:42:40,369
+infinity, because it's too confusing. Just to reiterate
+what I just said a moment ago, because I went very fast. If you
+
+289
+00:42:40,389 --> 00:42:45,674
+have minus infinity, 1 over minus infinity would be 0, and
+then 1 over 0, if that's plus infinity, no, that's really
+
+290
+00:42:45,714 --> 00:42:52,034
+bad. Whereas in IEEE, 1 over minus infinity would be minus 0,
+and then 1 over minus 0 would be minus infinity, so at least you
+
+291
+00:42:52,036 --> 00:43:02,488
+get it back. Then you might say, well, then what good are the
+infinities? Well, the point of the infinities is to use them
+
+292
+00:43:02,548 --> 00:43:12,156
+when you get overflow. You can overflow to infinity or
+underflow to zero, overflow to infinity or minus infinity,
+
+293
+00:43:12,196 --> 00:43:25,878
+depending on the sign. But then there's the question, a lot
+of the machine learning people say that actually they don't
+
+294
+00:43:25,919 --> 00:43:31,441
+even want the numbers to overflow to infinity because they
+want to use what they call saturation arithmetic because
+
+295
+00:43:31,921 --> 00:43:40,765
+otherwise they're going to see a lot of infinities with only
+eight bits because it's going to overflow a lot. It's
+
+296
+00:43:40,825 --> 00:43:49,036
+interesting because this discussion about how many bits to
+have It takes you back also to discussions in the 1940s. In
+
+297
+00:43:49,096 --> 00:43:57,851
+the 1940s, von Neumann, who was the big player then, he
+didn't want to even have exponent fields. He thought
+
+298
+00:43:57,891 --> 00:44:06,599
+significand fields are enough, the exponent fields can be
+taken care of by the programmer. which we see back in the
+
+299
+00:44:07,019 --> 00:44:16,161
+1940s, computers were super expensive. You had very few
+bits. And he basically wanted to get the programmer to do
+
+300
+00:44:16,201 --> 00:44:24,263
+everything that they, you know, to sort of not outsource
+things from the programmer to the computation, which the
+
+301
+00:44:24,283 --> 00:44:32,065
+programmer could actually do. But now we're back to the same
+kind of discussions with with machine learning, because if
+
+302
+00:44:32,085 --> 00:44:39,369
+you look at some of these papers on machine learning, they
+say, well, in order to avoid overflow, we need to do scaling,
+
+303
+00:44:39,389 --> 00:44:45,293
+we need to scale the numbers properly, which basically
+means that programmer intervention saying, look, before
+
+304
+00:44:45,313 --> 00:44:52,062
+you start doing a calculation, we should scale everything
+by two to the something or other. To try to avoid overflow or
+
+305
+00:44:52,122 --> 00:44:56,944
+underflow. That's really complicated, but it seems from
+what I see in the machine learning literature, this is
+
+306
+00:44:57,304 --> 00:45:05,366
+something that people are doing. And with saturation
+arithmetic, they won't have to worry about things
+
+307
+00:45:05,386 --> 00:45:13,228
+overflowing to infinity, but then the trouble with
+saturation arithmetic, what happens is, suppose you keep
+
+308
+00:45:13,268 --> 00:45:20,037
+doubling and you have a very large number and you multiply it
+by itself, and you'll just get the same number back again,
+
+309
+00:45:20,047 --> 00:45:28,474
+because you already have the largest number. With IEEE, it
+would go to infinity. And then if you divided that by that
+
+310
+00:45:28,514 --> 00:45:34,796
+large number again, it would still be infinity. So you'd
+really know. But with this, if you have a very large number,
+
+311
+00:45:34,816 --> 00:45:42,048
+and now you start making it smaller again, you'll never
+really know how big it was. You really lost not just
+
+312
+00:45:42,052 --> 00:45:52,639
+precision, but the scaling. And so again, it seems a little
+scary. Of course, another big issue is that machine
+
+313
+00:45:52,659 --> 00:46:00,105
+learning, it's not just being used to detect cats from dogs
+anymore. I mean, that's the stereotype, right? It's being
+
+314
+00:46:00,185 --> 00:46:12,072
+used for everything. And so there's a lot of risk in doing
+that that are not sufficiently accurate. So it's very hard
+
+315
+00:46:12,112 --> 00:46:20,458
+to see how all this will play out. And with P3109, I'm sure
+that we will come up with it showing a report eventually. But
+
+316
+00:46:20,738 --> 00:46:28,304
+whether the industry will have already moved on so far that
+they won't be interested, I don't know. Or maybe it'll be in
+
+317
+00:46:28,344 --> 00:46:33,687
+step with what the industry is doing. It's hard to tell.
+Another thing that's happening is that 754, the original
+
+318
+00:46:33,727 --> 00:46:42,911
+floating point standard, is they're already gearing up for
+the next revision, because it was 1985 and 2008 late, then
+
+319
+00:46:43,011 --> 00:46:48,974
+2019 late. So the next one's supposed to come out in 2029,
+which is, you know, getting scarily close. It's only five
+
+320
+00:46:49,014 --> 00:46:56,097
+years away. And this floating point standard is a very
+complex document, and a lot of things are changing in terms
+
+321
+00:46:56,137 --> 00:47:05,056
+of the details of the hardware and stuff. And so I was also
+joining discussions. The whole 3109 committee was
+
+322
+00:47:05,064 --> 00:47:14,823
+invited to join discussions about setting up the new 2029
+754 working group. That's being led by a guy called Leonard
+
+323
+00:47:14,843 --> 00:47:24,909
+Tsai, who's very on the ball. And that committee will be set
+up very soon. The working group, I say committee, but the
+
+324
+00:47:24,989 --> 00:47:33,159
+IEEE nomenclature is working group. Groups are the
+technical, are the committees basically that make all
+
+325
+00:47:33,199 --> 00:47:41,329
+these technical recommendations on all sorts of things to
+the IEEE, you know, approval mechanism, whatever it is, the
+
+326
+00:47:41,369 --> 00:47:51,999
+board or whatever. I also have one last question, but I think
+it is a very big one, so feel free to answer as short or as long
+
+327
+00:47:52,039 --> 00:48:00,682
+as you want. I think that we haven't discussed any chips,
+really. So do you think that any modern architectures are
+
+328
+00:48:00,782 --> 00:48:05,844
+better than others in terms of floating-point
+computations? Or maybe there are some special
+
+329
+00:48:05,864 --> 00:48:13,691
+instructions or special architecture designs? Yeah, I
+agree with you. It's a big question. I'm not really the right
+
+330
+00:48:13,711 --> 00:48:21,279
+person to ask because I'm not a hardware expert. But I mean,
+in general, the Intel chips have been very high quality.
+
+331
+00:48:21,839 --> 00:48:35,093
+They've been very consistent about adopting the standard.
+If you look at the Mac, look at Macintosh computers as they
+
+332
+00:48:36,013 --> 00:48:42,735
+used to be called, they used to use Motorola chips and they
+switched to Intel chips. Now they have their own chips, the
+
+333
+00:48:43,035 --> 00:48:54,822
+Apple system on a chip. That's the M1, M2, M3. I think they're
+M4. They already anNaNced M4, yeah. So those chips are also
+
+334
+00:48:54,902 --> 00:49:02,886
+very good, I believe. They are very careful about
+implementing the standard properly. Actually, there's an
+
+335
+00:49:03,306 --> 00:49:12,001
+interesting story that we might talk about the Pentium bug,
+but let me come back to that. NVIDIA NVIDIA became a big
+
+336
+00:49:12,018 --> 00:49:20,263
+player in this business through gaming, right, through
+GPUs. And the original GPUs were not IEEE compliant. But
+
+337
+00:49:20,283 --> 00:49:27,727
+then they really switched with CUDA. They really started
+making things IEEE compliant. I think they don't have the, I
+
+338
+00:49:27,747 --> 00:49:35,059
+believe they do not include the exception flags for the
+reasons that I kind of alluded to earlier, because it's not
+
+339
+00:49:35,063 --> 00:49:45,314
+so convenient with multi-threading and stuff, and all this
+parallelism. But in most things, they're IEEE compliant.
+
+340
+00:49:50,078 --> 00:49:57,461
+Yeah, the Google chips, I'm not so sure, because those are
+doing bfloat16. But as far as I know, they don't even have
+
+341
+00:49:57,501 --> 00:50:02,322
+gradual underflow. I might be wrong about that. I don't
+think they've stated whether they have or not. I've talked
+
+342
+00:50:02,342 --> 00:50:10,605
+to somebody at Google who's been super helpful. But there
+are some things he said he couldn't tell me. And if you'd like
+
+343
+00:50:10,625 --> 00:50:19,315
+to hear the Pentium bug story, that's another one. Yeah, I
+should there. Probably know it, yeah. So as I said, Intel
+
+344
+00:50:19,995 --> 00:50:31,279
+built all these great chips. Then in 1994, the Pentium was
+the sort of new thing, I guess then. And Pentium since then
+
+345
+00:50:31,319 --> 00:50:39,242
+has undergone lots and lots of changes. It's become a brand
+name of Intel. So there's many, many different kinds of
+
+346
+00:50:39,262 --> 00:50:52,517
+Pentium. But in 1994, your cat is in the picture. Oh, he's
+also interested in floating points. Okay, so in 1994, there
+
+347
+00:50:53,177 --> 00:51:00,003
+was a guy called Nicely, Thomas Nicely, I think he was in
+Virginia. He was a mathematician doing experiments with
+
+348
+00:51:00,463 --> 00:51:07,188
+number theory. And he was doing a lot of computations and
+eventually realized that some of them weren't correct. So
+
+349
+00:51:07,348 --> 00:51:11,992
+actually the most important thing about the standard, I
+didn't even really tell you. Maybe I should tell you that
+
+350
+00:51:12,012 --> 00:51:23,079
+first. So what the standard really states is that beyond all
+these you know, details like infinities and the details of
+
+351
+00:51:23,139 --> 00:51:30,384
+the representation. The most important thing that the
+standard set is that when you add two floating point
+
+352
+00:51:30,424 --> 00:51:37,508
+numbers, the result should be the correctly rounded value
+of the true result. That means it's as accurate as possible
+
+353
+00:51:37,608 --> 00:51:44,413
+given the representation. Same thing with multiply,
+divide, and so on. And it used to be like in the old Cray
+
+354
+00:51:44,453 --> 00:51:49,056
+supercomputers, they wouldn't bother with that. They
+said, well, we just want to be fast. And if it's not quite
+
+355
+00:51:49,096 --> 00:51:57,302
+right, sometimes it doesn't really matter. Well, that was
+very much the attitude that, you know, that kind of attitude
+
+356
+00:51:57,722 --> 00:52:06,829
+prompted the IEEE 754 committee in the first place, which
+said, no, computations have to be accurate. I should have
+
+357
+00:52:06,849 --> 00:52:10,792
+said this earlier, because this is really like a crucial,
+crucial point. But anyway, it's nice to save it for the end,
+
+358
+00:52:10,832 --> 00:52:25,101
+maybe. Well, that means in doubles, 64-bit, that the
+significands have to be accurate to, I guess it's 53 bits,
+
+359
+00:52:25,522 --> 00:52:31,447
+the significands or mantissas, because you've got a bunch
+of bits also for the exponent, 11 bits for the exponent. So
+
+360
+00:52:31,467 --> 00:52:38,091
+they need to be accurate to 53 bits in the significand,
+including the hidden bit, which translates in decimal, if
+
+361
+00:52:38,111 --> 00:52:53,851
+you can sort of figure the translation. So log base 10 of 2 to
+the 53, which is a number. So what is that? It's
+
+362
+00:52:53,911 --> 00:53:03,302
+approximately 16. So in other words, 2 to the 53 is
+approximately 10 to the 16. That's just a little
+
+363
+00:53:04,042 --> 00:53:10,671
+mathematical fact. Why do we even use base 10 anyway? That's
+another interesting thing, right? But it's because of
+
+364
+00:53:10,731 --> 00:53:22,284
+this, right? We have 10 fingers and thumbs, so that's
+thousands of years old. People, you see that 10. Reckoning
+
+365
+00:53:22,344 --> 00:53:30,867
+in 10s idea. I have some history stuff in the book, too, if
+you're interested in more. Anyway, as I said, binary is the
+
+366
+00:53:31,019 --> 00:53:40,013
+thing to use in computers, and that idea has been accepted
+really since the 1940s. But if something is accurate to 53
+
+367
+00:53:40,013 --> 00:53:45,672
+bits, how many decimal digits is it accurate to? Well, the
+answer is approximately 16, and that's the reason right
+
+368
+00:53:45,692 --> 00:53:53,381
+there. OK, so Nicely found that his numbers, which were
+supposed to be accurate to about 16 digits, they were only
+
+369
+00:53:53,461 --> 00:54:01,289
+accurate to about four digits in some very unusual cases.
+And he thought, well, this is weird. So he contacted Intel.
+
+370
+00:54:02,039 --> 00:54:08,116
+And it turned out Intel actually knew about it, but they
+weren't telling anyone because they thought nobody would
+
+371
+00:54:08,176 --> 00:54:25,134
+notice. And then it was a huge thing in the media. But there is
+always one guy. Exactly. And it was really amazing, because
+
+372
+00:54:26,098 --> 00:54:30,238
+if you had tried to convince the public through an
+advertising campaign that it's really important to have 16
+
+373
+00:54:30,239 --> 00:54:38,343
+decimal digits, people are just going to yawn. But as soon as
+you tell them that they can't have it, then they all of a
+
+374
+00:54:38,363 --> 00:54:44,364
+sudden wake up and say, no, we want them. And that's what
+Intel said. They said, well, it's okay. Nobody really needs
+
+375
+00:54:44,404 --> 00:54:51,026
+this. And we'll fix your computer. We'll fix the
+scientists' computers. But the everyday person using a PC,
+
+376
+00:54:51,046 --> 00:54:57,568
+they don't need this. It's really not necessary. And then
+people were furious. No, we want it to. And so finally, Intel
+
+377
+00:54:57,588 --> 00:55:05,851
+had to backtrack and had to replace all those Pentium chips,
+which, of course, cost them a lot of money. And it was very bad
+
+378
+00:55:05,891 --> 00:55:12,713
+press. But in the end, it was actually good for everybody, I
+think, because now people realize that you really have to be
+
+379
+00:55:12,733 --> 00:55:18,615
+very careful about these things. There are much more
+attention to proving that hardware implementations are
+
+380
+00:55:18,655 --> 00:55:27,677
+correct, this sort of thing. And there haven't been any
+repeats about this. And it was so ironic because Intel had
+
+381
+00:55:27,897 --> 00:55:35,659
+done more than any company in history for bringing accurate
+floating point to the masses, to people in general,
+
+382
+00:55:35,839 --> 00:55:46,641
+non-scientists and non-engineers. And all of a sudden,
+they were getting bad press. But anyway, it came back and now
+
+383
+00:55:46,661 --> 00:55:54,206
+for years, there were these laptops saying Intel inside,
+right? And that's very much appreciated that the Intel
+
+384
+00:55:54,246 --> 00:56:01,651
+chips are very good. If you look at the top 500, I couldn't
+find anything more recent than, there should be something
+
+385
+00:56:01,712 --> 00:56:11,319
+from even this year and last year, but there's a Wikipedia
+page for the top 500 PCs, processors from August 2022, which
+
+386
+00:56:11,339 --> 00:56:19,784
+is a long time ago. Based on flops. Yes, the fastest
+computers. Of course, these are all massively parallel
+
+387
+00:56:20,465 --> 00:56:32,778
+processors. In 2022, I think it was like 380 out of 500 of them
+were Intel, or at least they were x86. No, I think they're
+
+388
+00:56:32,798 --> 00:56:40,947
+almost all x86. I would have to check. And most of them are
+Intel. The one company I haven't mentioned actually is AMD.
+
+389
+00:56:41,327 --> 00:56:49,677
+I knew there was another one. I was forgetting. AMD pretty
+much makes all the same chips as Intel does because they
+
+390
+00:56:49,717 --> 00:57:00,386
+struck a deal with Intel way back in the 80s when IBM adopted
+Intel. This is another super ironic story, right? IBM
+
+391
+00:57:00,426 --> 00:57:07,039
+adopted Intel to make their PC because they didn't think
+that, to make the chip for their PC. In those days, they
+
+392
+00:57:07,041 --> 00:57:13,094
+didn't think that the laptops were going to be a serious
+business. They had their big mainframe business where IBM,
+
+393
+00:57:13,174 --> 00:57:21,012
+big company, Intel is just this little startup thing. Of
+course, now Intel is a far bigger company. And also, of
+
+394
+00:57:21,018 --> 00:57:27,685
+course, another small player back then was Bill Gates and
+Microsoft, and they got the deal with Intel, and then, of
+
+395
+00:57:27,745 --> 00:57:34,329
+course, Microsoft became much bigger than IBM, too. So
+these things, they're all very ironic, right? Well, the
+
+396
+00:57:34,369 --> 00:57:44,358
+reason that AMD got to make the same Intel designs was that
+IBM said, look, we're not going to be just stuck with this
+
+397
+00:57:44,438 --> 00:57:51,063
+little company, Intel. What if Intel goes bankrupt? We need
+a backup. So they insisted on a second company. This is all
+
+398
+00:57:51,123 --> 00:58:03,074
+documented in a book called, I think it's called, I forget. I
+could look it up. It'll be in the second edition. not a book by
+
+399
+00:58:03,094 --> 00:58:16,879
+me. I mean, the book that describes these IBM decisions is
+something published. Anyhow, so they insisted on another
+
+400
+00:58:16,919 --> 00:58:23,161
+company being able to sell these too. Well, so AMD was kind of
+secondary to Intel for a long time, but then Intel really
+
+401
+00:58:23,221 --> 00:58:39,814
+stumbled in the early 2000s with their IA-64 design, or no,
+IA-32, I guess it was. I think it's IA32. What happened was it
+
+402
+00:58:39,834 --> 00:58:47,643
+didn't really get adopted much widely, and AMD made
+something that they called, I think, X64 or something like
+
+403
+00:58:47,663 --> 00:58:57,569
+this. I mean, x86, I guess. Yeah. Because all these Intel
+chips, they all became known as x86. The original floating
+
+404
+00:58:57,609 --> 00:59:11,098
+point was x87, 8087, and then the 87 was absorbed into the
+x86. and Pentium is part of the x86 sequence. And then AMD was
+
+405
+00:59:11,138 --> 00:59:18,583
+making these x86, and they went to the 64-bit processor,
+which refers to the, not to the floating point, but to the way
+
+406
+00:59:18,623 --> 00:59:30,045
+the memory is organized with 64 bits. And then so the AMD x86
+design got adopted widely, and even Intel eventually
+
+407
+00:59:30,051 --> 00:59:38,676
+switched to that. So that's kind of a long-winded answer to
+your question, I think. Yeah, but as always, I learned a lot,
+
+408
+00:59:38,876 --> 00:59:47,082
+so thanks a lot. I think that we should wrap it up because it's
+almost an hour, or maybe just even more than an hour right
+
+409
+00:59:47,086 --> 01:00:00,887
+now. Yeah, thanks a lot. I learned a lot, really. I had a great
+laugh. And I think that our audience will enjoy it as much as I
+
+410
+01:00:00,927 --> 01:00:07,021
+do. That's so great. I'm so delighted to hear it. And the
+second edition will be out there before too long. Yeah, I
+
+411
+01:00:07,023 --> 01:00:15,295
+will put any links that you'll send me into the description. And
+thanks a lot for answering all my questions, going deep into
+
+412
+01:00:15,335 --> 01:00:21,018
+the history and into the technical parts. It's really
+awesome. It was really a pleasure.
+

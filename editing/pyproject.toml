@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "editing"
+version = "0.0.0"
+description = "Internal tooling for editing videos"
+authors = ["sobolevn <mail@sobolevn.me>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+classifiers = [
+  "Private :: Do not Upload",
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+srt = "^3.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
