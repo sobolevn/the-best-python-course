@@ -1,0 +1,443 @@
+1
+00:00:33,189 --> 00:00:46,173
+Welcome to my channel, Alex. Can you please introduce yourself? It's great to be here. Yeah, I'm Alex.
+My day job currently is working at Astral, where I work on the linter ruff. And in my spare
+
+2
+00:00:46,193 --> 00:01:00,557
+time, I do a lot of open source stuff in the Python community. So I'm a CPython core dev. I'm a
+typeshed maintainer. I also maintain the typing focused linter flake8-pyi, and I make triage
+
+3
+00:01:00,577 --> 00:01:16,939
+with MyPy. And I maintain typing_extensions as well. Oh, very, very good list. I'm happy that
+you accepted this invitation and I'm going to ask you about some deep typeshed stuff. And I
+
+4
+00:01:17,539 --> 00:01:29,543
+really want to know, are there any things that we can really improve in the typeshed testing?
+Because right now there are a lot of checks, a lot of CI jobs. We check mostly everything that we
+
+5
+00:01:29,583 --> 00:01:44,842
+can. What can we do better? What's your opinion? That's a really interesting question. I think,
+yeah, we already have a lot of tests that make sure that the annotations that we do have are good
+
+6
+00:01:45,083 --> 00:01:56,651
+and that the stubs that we have are consistent with the runtime. I think probably the thing I
+would want to improve on is better stub generation. so that it's easier for people to just add
+
+7
+00:01:56,711 --> 00:02:10,032
+baseline stubs, which have a decent quality, and they don't have to work really hard to get that.
+We have stub generation scripts, and they will produce very basic stubs, but those stubs aren't
+
+8
+00:02:10,036 --> 00:02:18,405
+really worth much. There are easy ways that we can make them better, and we've got some
+contributors at MyPy that are working on stubgen quite a lot at the moment, which is great to see,
+
+9
+00:02:19,326 --> 00:02:31,074
+but there's still so much more that we can do there, I think. So that's where I would probably
+focus efforts right now. I also think that we don't have any side jobs on non-Linux, non-MacOS,
+
+10
+00:02:31,154 --> 00:02:45,975
+or non-Windows. We only have three operating systems here. And I think it might be a very good
+idea to run something like Solitis or something like that. Yeah. Yeah, it's interesting. I
+
+11
+00:02:46,035 --> 00:02:58,881
+don't know that we've had many people complain about the quality of type checking on Solaris,
+for example. But if that's a, so I don't know how much of a problem that is. But if it is a problem,
+
+12
+00:02:58,901 --> 00:03:10,786
+then I would definitely, definitely be in favor of that. Yeah, I'd be interested in talking to
+Solaris folks and seeing what their Yeah, I think that not a lot of people use Solaris, so we don't
+
+13
+00:03:10,867 --> 00:03:22,653
+have a lot of complaints there, because you have to not only use Solaris and CPython type check,
+and you also have to use some specific APIs for that, so you can see the actual problems. But yeah,
+
+14
+00:03:23,634 --> 00:03:38,168
+that's my point that I really want to see improved from time to time. Okay, I think that this
+question is not really related to typeshed, but I cannot simply skip it because I think it will be
+
+15
+00:03:38,208 --> 00:03:50,517
+very interesting for my audience and for me as well. How do you find Rust and its type system
+compared to CPython? I've been enjoying it a lot. The last few days I've been refactoring a lot of
+
+16
+00:03:50,537 --> 00:04:03,911
+tests, and it is a pain that you have to make every test compile before you can run a single one.
+That part I'm not enjoying so much. I think the thing that I studied learning Rust relatively
+
+17
+00:04:03,951 --> 00:04:14,659
+recently in December, and the thing that surprised me most was that I was expecting it to be
+stricter than Python's type system in every way. And in reality, that wasn't the case. There's
+
+18
+00:04:14,779 --> 00:04:28,031
+some things that you can do in Rust that you can't do in Python. For example, it's much easier to
+redefine a symbol to a different type later in the same function in Rust than it is in Python. Mypy
+
+19
+00:04:28,033 --> 00:04:42,122
+typically won't let you do that. Pirate will never let you do that. So that took me by surprise.
+And the reason for that is that Rust scoping rules are such that it's possible to do that safely in
+
+20
+00:04:42,162 --> 00:04:59,671
+Rust, whereas you couldn't do that safely in Python. But yeah, no, I'm loving writing Rust. It's
+very refreshing. I think it's very refreshing. Because when you write in Rust, you compose
+
+21
+00:04:59,731 --> 00:05:10,373
+programs, you don't just write them. You have to think everything through. You have to think
+about memory management, you have to think about exceptions. I mean, the lack of exceptions.
+
+22
+00:05:11,835 --> 00:05:21,446
+It's very interesting. Yeah, I understand that. Okay. So if we're talking about type systems
+and their difference in different languages, what do you think about what are the biggest
+
+23
+00:05:21,486 --> 00:05:33,006
+challenges for Python type system right now? I think we're at an interesting point in the type
+systems development. Over the last, you know, since PEP 484, which was the PEP that introduced
+
+24
+00:05:33,062 --> 00:05:45,449
+the type system, was introduced, we've had a lot of new features introduced in pretty much every
+Python release. So it's been a period of really rapid evolution. And right now, over the past
+
+25
+00:05:45,529 --> 00:05:56,792
+year, we've seen the creation of the Typing Council and the creation of the first version of the
+Typing Swag. And I think... Can you please elaborate a little more on that? Because I'm pretty
+
+26
+00:05:56,832 --> 00:06:11,586
+sure that a lot of people are not familiar with that. Thanks, yeah. So the Typing Council is a new
+body that's been set up, which has several type checker authors represented in it, and several
+
+27
+00:06:11,606 --> 00:06:24,851
+other people who have been heavily involved in the typing system for the last few years. They
+serve as an advisory body to the Steering Council, essentially, where the Steering Council
+
+28
+00:06:25,331 --> 00:06:34,515
+delegates many decisions on PEPs to them. I think delegate might not be quite the right word
+because the Steering Council does have the final say, but it heavily takes their advice on
+
+29
+00:06:34,555 --> 00:06:44,038
+board. So there has been a new specification for the typing system written up. So that's an
+attempt to formally describe how all of the rules that have been created through the various
+
+30
+00:06:44,078 --> 00:06:57,411
+Python Enhancement Proposals over the last few years, how they all fit together, how they
+should work in tandem. And any small minor changes to the typing spec can be automatically
+
+31
+00:06:57,451 --> 00:07:07,885
+approved by the Typing Council without having to have a new PEP being written. So that's the
+other role that the Typing Council has, other than giving their feedback on PEPs. I think the
+
+32
+00:07:07,965 --> 00:07:18,452
+overall mood in the typing community. So my sense is that at the moment, I can't speak for
+everybody in the typing community, but my sense is that the overall mood right now is that we want
+
+33
+00:07:18,512 --> 00:07:30,819
+to slow down with features a little bit and more formally figure out exactly how they should, how
+the existing features that we have should work together and interoperate a bit more. Now, I
+
+34
+00:07:30,839 --> 00:07:44,237
+think that typing console is doing a great job because the amount of information they have to
+collect and to approve with different type checkers and to standardize is just... Very huge.
+
+35
+00:07:44,897 --> 00:07:57,301
+And I also want to highlight that they don't just create a specification for that. They also
+create a compliance suite for all the type checkers. So all the type checkers can have a baseline
+
+36
+00:07:57,742 --> 00:08:08,426
+of features that should be supported and should be treated the same way. I think that it was a
+long-awaited addition to the Python governance team. So very appreciate their work. I
+
+37
+00:08:08,446 --> 00:08:19,631
+completely agree. Can you please share a bit of maybe a personal history? How did you start
+contributing to typeshed? So it might be a good example for others who just want to start
+
+38
+00:08:19,651 --> 00:08:31,024
+contributing or just for someone who is not aware that they can contribute to typeshed right
+now. To go back a bit further, I originally started learning about Python typing because I was
+
+39
+00:08:31,046 --> 00:08:46,154
+fairly new to Python, really, and I was using PyCharm. PyCharm's type checker was on by default,
+so I kept on writing code and I kept on up with these weird, annoying errors about how I said that
+
+40
+00:08:46,655 --> 00:08:56,344
+this was a list and now it's a dict and PyCharm was getting very angry at me. So I read up on loads of
+tutorials and I guess when I learn about something, I like to learn about it properly. So I
+
+41
+00:08:56,384 --> 00:09:07,653
+learned quite a lot about the Python typing system as a result of that, and then quickly found out
+Answering questions on Python typing was a really good way to get lots of points on Stack
+
+42
+00:09:07,693 --> 00:09:20,301
+Overflow because there were loads of questions on Stack Overflow about Python typing. So
+carried on building up my Python typing expertise because of that. And then eventually I was
+
+43
+00:09:20,321 --> 00:09:34,991
+just reading through the type shed subs for built-ins one day and noticed that a bunch of
+parameters weren't marked as positional-only in the stubs when they were. Oh yeah. Yeah. By the
+
+44
+00:09:35,031 --> 00:09:48,576
+way, did we fix all the param positional-only problems? All that can be detected automatically
+using stochastic. Yeah. So I filed a PR, like making some parameters and some methods on
+
+45
+00:09:48,596 --> 00:10:00,094
+built-in stock property positional-only. And it was merged at like five minutes, I think. I was
+like, wow, that was fun. Let's do that again. That was how I got my start. Quickly discovered that
+
+46
+00:10:00,096 --> 00:10:09,983
+it was really fun working with the team and that the team was incredibly welcoming. I owe a lot to
+the other typeshed maintainers because those were some of the first open source contributions
+
+47
+00:10:10,043 --> 00:10:22,428
+I made. I can completely agree because the typeshed team is amazing. They're very fast to
+respond. They're very picky in a good way. They find a lot of different details and different
+
+48
+00:10:23,228 --> 00:10:38,792
+thing to prove. And I think that it is a very rare example of a project that it is very addictive
+contributing to. Yes. Yeah, definitely. So my advice for starting to contribute is to, we're
+
+49
+00:10:38,832 --> 00:10:53,518
+still adding stubs for things that were added or changed in Python 3.13. So I have an issue open on
+typeshed that I wrote up during the PyCon sprints, add or change things that were added or
+
+50
+00:10:53,538 --> 00:11:04,604
+changed in Python 3.13 to our stubs. So that's a great way you can help us out right now. Yeah,
+another way you can help us out is we have a lot of our standard library stubs generally have
+
+51
+00:11:05,005 --> 00:11:16,536
+fairly complete annotations. But for our third party stubs, there's loads of parameters which
+don't have any annotations. or are marked with incomplete, which means it's an alias for any,
+
+52
+00:11:16,616 --> 00:11:26,911
+but it means that we don't know exactly what should go there yet because we haven't looked into it
+yet. So if you fancy going through our stubs and helping improve our third party stubs, those are
+
+53
+00:11:26,951 --> 00:11:40,485
+also very welcome. I have a very specific workflow for finding stops that you can help with. You
+can just press go to type definition and you can find the stops right in front of you in your IDE. So
+
+54
+00:11:40,645 --> 00:11:53,459
+you can see what stops are filled with annotations and what stops are missing right now. This is
+really helpful. So please consider doing that. I would definitely encourage just very small
+
+55
+00:11:53,499 --> 00:12:03,793
+PRs, five or 10 lines are very welcome. They're very easy for us to review and we'll probably
+review them very quickly. If it's a PR of 1000 lines, then we'll get to it eventually, but it might
+
+56
+00:12:03,813 --> 00:12:14,222
+take a while for us to to look at it because we're quite busy people. Yeah, don't be afraid to just
+make very piecemeal contributions. There's just as good as larger contributions, and there's
+
+57
+00:12:14,262 --> 00:12:26,791
+no shame in that small PR. TypeShift is very beginner-friendly. It is very easy to contribute,
+and I highly promote doing so. Yeah, I completely agree. I think my first PR was like five lines or
+
+58
+00:12:26,851 --> 00:12:43,294
+so changed, and so were around my first 30 PRs. Yeah. I also have one more question that arised just
+now, because there are two type systems actually. One is for static checks and one is for Python
+
+59
+00:12:43,334 --> 00:12:55,857
+runtime. And I think that we've missed the runtime part. Do you have some insights about what
+steps are going to land in this part? What are the problems right now that we can solve in the
+
+60
+00:12:55,917 --> 00:13:14,423
+future? And what are the problems that we cannot solve at all? Sure. Are you interested in Python
+3.13 or 14? I think we can discuss both of them. Okay. Python 3.13 is a really exciting release
+
+61
+00:13:15,083 --> 00:13:28,332
+because we have both an experimental mode where you can turn off the GIL at runtime, which is the
+global interpreter lock, which prevents more than one thread running simultaneously in
+
+62
+00:13:28,552 --> 00:13:42,403
+Python. And we also have another experimental mode, which creates a just-in-time
+interpreter. And you can also enable both at once if you want, although they've been created by
+
+63
+00:13:42,463 --> 00:13:53,902
+different people and different teams, but they do somehow work together nonetheless. So both
+of those are unlikely to make your code much faster right now. The version of Python without the
+
+64
+00:13:53,942 --> 00:14:09,019
+GIL has quite a few optimizations turned off because they're not thread safe yet. And the
+just-in-time interpreter for the other experimental build option is very new and doesn't slow
+
+65
+00:14:09,021 --> 00:14:18,316
+Python down at all, but also doesn't speed it up yet. So for both of them, you'll probably have to
+wait until Python 3.14 until they speed up your code much, but you can play around with them now.
+
+66
+00:14:19,236 --> 00:14:29,763
+And that's exciting things coming for Python 3.14, which is not the next Python release, but the
+one after that. We'll hopefully have big speed ups for both single-threaded and
+
+67
+00:14:43,839 --> 00:14:43,919
+multi-threaded code. In Python 3.14, so not the Python release that's coming out in October,
+but the one that will be coming out in 2025, I suppose, we will hopefully be getting PEP 649,
+
+68
+00:14:43,919 --> 00:14:58,242
+which is lazily evaluated annotations by default in Python. So currently, if you have a
+function that returns a class, and then you define that class later on in the same file, or it's a
+
+69
+00:14:58,282 --> 00:15:12,551
+method on that class that returns itself, then you'll get a name error if you try to reference
+that class that doesn't yet exist in the return type of that function or method. And you can get
+
+70
+00:15:12,571 --> 00:15:21,802
+around that at the moment by doing from done to future import annotations at the top of your file.
+But the problem with that is that it turns every annotation in your file into a string. So this
+
+71
+00:15:21,862 --> 00:15:35,362
+breaks tools that do runtime introspection of annotations Uh, like the TypeGuard library or
+TriCast or Pydantic or FastAPI. Uh, and these tools have become really popular for the last few
+
+72
+00:15:35,402 --> 00:15:46,032
+years. So originally the plan was from, for, from future import annotations to become the
+default in Python 3.10. But then that plan was scrapped, uh, because it was realized that it
+
+73
+00:15:46,052 --> 00:15:57,559
+would break all of these tools. So the new plan is to, uh, have. all annotations be runtime
+objects, just like they are now, but for those two runtime objects to be lazily evaluated on
+
+74
+00:15:57,599 --> 00:16:11,086
+request using descriptors. This is quite a complicated change to implement, which involves
+lots of changes to the compiler and to the Python data model, but it should hopefully solve all
+
+75
+00:16:11,186 --> 00:16:25,414
+use cases. It is currently halfway towards being implemented in CPython at the moment and
+should be landing in Python 3.14. And the work is being done by Jelle Zijlstra. I hope I
+
+76
+00:16:25,434 --> 00:16:38,322
+pronounced his name correctly. Yeah, I think so. I think so. But I learned several times how to
+pronounce his name correctly. So yeah. Yeah. So he's the other typing module maintainer at
+
+77
+00:16:38,342 --> 00:16:50,641
+CPython, and also a typeshed maintainer, and black developer, and MyPy maintainer, and
+typing_extensions maintainer. So he also does a lot of things. He does a lot of things. He is very
+
+78
+00:16:50,701 --> 00:17:01,409
+active in both the Python core development and in typeshed and in typing_extensions because I
+think that he is the main maintainer of type extensions as far as I remember. Do you have any other
+
+79
+00:17:01,429 --> 00:17:13,479
+examples of things that will be better in future versions of Python considering runtime
+support of types? So for introspection, maybe some changes to inspect modules, something like
+
+80
+00:17:13,519 --> 00:17:28,265
+that. Oh, inspect.signatures. Has that been implemented? It's a work in progress. Right. Yeah.
+So there's currently a proposal by Serhiy Storchaka, again, I hope I pronounced his name
+
+81
+00:17:28,285 --> 00:17:40,715
+correctly, to implement support for functions, better support for functions that have
+multiple signatures in Python. So we already support these in the static typing system via
+
+82
+00:17:40,775 --> 00:17:52,664
+typing.overload. But at runtime, if you call inspect.signature on a function, then it will
+only ever give you one signature for that function. And that's often not very accurate if you
+
+83
+00:17:52,684 --> 00:18:05,372
+have something like a function that's decorated with functools.singleDispatch, for
+example. or just a built-in function like max or min, which you can use in many different ways. If
+
+84
+00:18:05,432 --> 00:18:14,754
+it's implemented, then this proposal will mean that I can't remember whether the proposal was
+for it to return a multi-signature object or a list of signature objects. It's quite a
+
+85
+00:18:14,814 --> 00:18:24,977
+complicated thing to work through exactly how it would work. Yeah. So we'll see whether that
+happens, but fingers crossed. I think it would definitely better reflect Python semantics at
+
+86
+00:18:25,037 --> 00:18:38,581
+runtime. I really hope that Python will get better at both static checks and at runtime checks
+because both are very important for the ecosystem and for Python developers. Typing is really
+
+87
+00:18:38,601 --> 00:18:51,047
+interesting and I highly recommend everyone to at least try to contribute to typeshed and maybe
+some other tools like pyright, MyPy and CPython itself. Alex, thanks a lot for coming and
+
+88
+00:18:51,167 --> 00:19:07,102
+answering my questions. I think that our audience will have a lot to learn from your expertise
+and from your interview. And it was a pleasure for me to see you here. So thanks. Thanks so much for
+
+89
+00:19:07,142 --> 00:19:08,183
+inviting me. This is really fun.
