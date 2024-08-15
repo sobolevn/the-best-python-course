@@ -11,3 +11,4 @@
 Жесть:
 - Мутабельность `bytes` https://docs.python.org/3.13/c-api/bytes.html#c._PyBytes_Resize
 - `PyBytes_Writer` API: https://github.com/capi-workgroup/decisions/issues/39
+- `ob_shash` deprecation: https://github.com/python/cpython/issues/91020
