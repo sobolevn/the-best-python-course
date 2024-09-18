@@ -756,7 +756,7 @@ that's getting really short. And now the latest thing is
 152
 00:22:47,082 --> 00:22:56,068
 just a few months ago, I think it was in April or so, NVIDIA
-anNaNced that they're making 4-bit floating point, which
+announced that they're making 4-bit floating point, which
 
 153
 00:22:56,168 --> 00:23:05,294
@@ -1661,7 +1661,7 @@ switched to Intel chips. Now they have their own chips, the
 333
 00:48:43,035 --> 00:48:54,822
 Apple system on a chip. That's the M1, M2, M3. I think they're
-M4. They already anNaNced M4, yeah. So those chips are also
+M4. They already announced M4, yeah. So those chips are also
 
 334
 00:48:54,902 --> 00:49:02,886
