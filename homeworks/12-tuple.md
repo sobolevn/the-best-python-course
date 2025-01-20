@@ -17,5 +17,6 @@
 - `Tuple` против `List`. Мы на самом деле немного врем людям, говоря, что разница в мутабельности и иммутабельности. Что на самом деле является лишь деталью реализации в Python. Ведь есть языки, где оба типа данных иммутабельны: Erlang, Haskell, тд. Фундаметальное различие лежит внутри Теории Категории. Из нее мы узнаем, что `Tuple` - тип произведение, а `List` (по хорошему) - монада (в питоне всего лишь моноид в смысле `l + []` и недо-функтор в смысле `map(f, l)`). Вот почему тип `List[x]` имеет kind `* -> *`, а `Tuple[x, ...]` имеет kind `* -> ... -> *`. Повторить Теорию Категорий: https://github.com/hmemcpy/milewski-ctfp-pdf
 - `tuple` должен быть иммутабельным на уровне C: https://github.com/python/cpython/issues/127058
 - Algebraic Data Types: https://jrsinclair.com/articles/2019/algebraic-data-types-what-i-wish-someone-had-explained-about-functional-programming/
+- Теория категорий для программистов: https://github.com/hmemcpy/milewski-ctfp-pdf
 - `BUILD_TUPLE`: https://docs.python.org/3/library/dis.html#opcode-BUILD_TUPLE
 - `INTRINSIC_LIST_TO_TUPLE`: https://docs.python.org/3/library/dis.html#opcode-CALL_INTRINSIC_1
