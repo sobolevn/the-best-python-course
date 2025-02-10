@@ -1,0 +1,41 @@
+name: test
+
+'on':
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - 'practice/asm-builtins/**'
+      - '.github/workflows/asm-builtins.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install the module
+      run: pip install .
+      working-directory: practice/asm-builtins
+    - name: Run tests
+      run: python -c 'import asm_builtins; asm_builtins.print(1, 2)'
+      working-directory: practice/asm-builtins

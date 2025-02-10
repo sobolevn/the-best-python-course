@@ -205,7 +205,6 @@ fabric.properties
 
 # Used for testing:
 ex.py
-setup.py
 
 # Output of code generation:
 editing/out.srt

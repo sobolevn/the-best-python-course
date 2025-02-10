@@ -19,3 +19,8 @@
 - Algebraic Data Types: https://jrsinclair.com/articles/2019/algebraic-data-types-what-i-wish-someone-had-explained-about-functional-programming/
 - `BUILD_TUPLE`: https://docs.python.org/3/library/dis.html#opcode-BUILD_TUPLE
 - `INTRINSIC_LIST_TO_TUPLE`: https://docs.python.org/3/library/dis.html#opcode-CALL_INTRINSIC_1
+
+
+## Практика
+
+- Разобраться с https://github.com/sobolevn/mutable-tuple
