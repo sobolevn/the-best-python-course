@@ -1,7 +1,7 @@
 # "Лучший курс по Питону"
 
 [![Static Badge](https://img.shields.io/badge/%D0%BF%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%B0%D1%82%D1%8C-%D0%BA%D1%83%D1%80%D1%81-orange?style=flat&logo=boosty&color=orange)](https://boosty.to/sobolevn)
-[![Discord](https://img.shields.io/discord/1151831136016805910?logo=discord&style=social)](https://discord.python.ru)
+[![Telegram chat](https://img.shields.io/badge/chat-join-blue?logo=telegram)](https://t.me/opensource_findings_chat)
 
 Привет!
 
