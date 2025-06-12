@@ -1,0 +1,1698 @@
+1
+00:00:00,571 --> 00:00:05,738
+Hello everyone, my name is Nikita Sobolev and this is
+the Best Python Python course. Today is an unusual
+
+2
+00:00:05,758 --> 00:00:12,206
+video, so to speak, special and unique, because our
+guest today is special and unique. Today I will talk
+
+3
+00:00:12,306 --> 00:00:19,876
+to another Python core-develope, who knows a lot
+about how free-theading, JIT, as well as many other
+
+4
+00:00:19,896 --> 00:00:25,824
+internal parts of Python, he is also a member of
+the Steering Council. This is such a special control
+
+5
+00:00:25,844 --> 00:00:32,862
+body for all Python. And, of course, I specially
+prepared Russian subtitles for you. You can turn them
+
+6
+00:00:32,882 --> 00:00:37,795
+on right on YouTube and listen in English and read in
+Russian, if it's easier for you. There are also
+
+7
+00:00:38,517 --> 00:00:46,536
+English subtitles, so you can use them if you want. I
+really want all python devs to understand how
+
+8
+00:00:46,556 --> 00:00:51,546
+management works with such a big project as the most
+popular programming language in the world. Because
+
+9
+00:00:51,566 --> 00:00:58,439
+this is also a real engineering task. Of course, not
+every one of us will encounter this in real life.
+
+10
+00:00:58,459 --> 00:01:03,147
+However, nothing prevents us from looking at how it
+really works and bringing something new and
+
+11
+00:01:03,468 --> 00:01:08,096
+interesting into our lives. Many people still
+mistakenly believe that Guido van Rossum makes all
+
+12
+00:01:08,116 --> 00:01:13,264
+decisions on his own. However, this is not the case.
+Now Python is managed by the Steering Council. This is
+
+13
+00:01:13,284 --> 00:01:19,955
+a select committee of five people, which changes
+every year. Any core-developer can join it, even
+
+14
+00:01:19,975 --> 00:01:27,066
+non-core-developers. It is the Steering Council that
+decides which PEPs will be accepted and which PEPs
+
+15
+00:01:27,086 --> 00:01:32,515
+will be rejected. That is, there are literally five
+people who determine the fate of all Python. Today I
+
+16
+00:01:32,595 --> 00:01:39,202
+invited one of them to talk about the whole process.
+And of course, when such a person comes to visit you,
+
+17
+00:01:39,382 --> 00:01:44,988
+you can't help but ask him about other interesting
+topics. For example, Donghee Na is one of the major
+
+18
+00:01:45,008 --> 00:01:50,314
+participants in the free-theading project. We will
+also touch on the JIT issue a little, because right now
+
+19
+00:01:50,334 --> 00:01:56,521
+we are considering a PEP that will change how JIT
+works, and it is very interesting to discuss it. Well,
+
+20
+00:01:56,541 --> 00:02:03,775
+we will also touch on such two topics as Relocatable
+Builds and BOLT. For those who do not know what it is, of
+
+21
+00:02:03,855 --> 00:02:08,804
+course, we will tell everything during the interview. Well, now to
+the interview itself. Let's get started. Donghee Na, it
+
+22
+00:02:08,884 --> 00:02:16,878
+is really nice to have you here. You are a very, very
+talented developer and Steering Council member. And
+
+23
+00:02:16,918 --> 00:02:22,646
+today we are going to talk about your Python
+contributions, your Steering Council work, and a lot
+
+24
+00:02:22,686 --> 00:02:29,334
+of stuff around CPython. So thanks a lot for joining,
+and please introduce yourself. OK, hi. So my name is
+
+25
+00:02:29,354 --> 00:02:40,446
+Donghee, and I'm from South Korea. And I've started to
+contribute to CPython from 2017, and I've promoted to
+
+26
+00:02:41,127 --> 00:02:48,274
+the CPython core dev around 2020. And then I'm now
+working as the Steering Council member from this
+
+27
+00:02:48,395 --> 00:02:58,36
+year. So, and these days I'm focusing on how
+free-threading works and other CPython stuff. So, I
+
+28
+00:02:58,4 --> 00:03:05,527
+really enjoy to contribute to the open source, yeah. It's really
+
+29
+00:03:05,587 --> 00:03:14,745
+great because you were the first person to introduce
+me to the Python Triage team back in 2021 or 2022,
+
+30
+00:03:14,765 --> 00:03:22,718
+something like that. And I'm still grateful for that.
+Thank you. It was really big fun to work as a triager
+
+31
+00:03:23,159 --> 00:03:29,805
+and to learn all the Python workflow and all the
+internals. Can you please explain to my audience what
+
+32
+00:03:29,845 --> 00:03:36,411
+Steering Council is? Yes, so the Python Steering
+Council is kind of a small group of the Python core devs
+
+33
+00:03:36,491 --> 00:03:45,079
+that are elected to oversee the development and
+direction of the Python language. So from 2018 and
+
+34
+00:03:45,219 --> 00:03:54,804
+after the Guido's resignation from the BDFL position, the
+first Steering Council was actually formed and the
+
+35
+00:03:54,824 --> 00:04:01,975
+Guido was one of the members for the first year.
+The primary responsibility of the
+
+36
+00:04:01,995 --> 00:04:09,711
+Steering Council is managing the PEP process and
+making decisions for which PEP will be accepted. And
+
+37
+00:04:09,771 --> 00:04:17,78
+then we also manage the core devs events, including
+the Python Language Summit, and the core sprint
+
+38
+00:04:17,8 --> 00:04:26,409
+stuff, and et cetera. A lot of stuff is
+actually managed by the Steering Council people. So
+
+39
+00:04:26,489 --> 00:04:35,019
+basically, the Steering Council is a group of Python
+people who direct and control all the evolution of the
+
+40
+00:04:35,039 --> 00:04:42,327
+Python language. So basically, that's a big work. And
+these are the most talented and the most
+
+41
+00:04:42,808 --> 00:04:49,478
+knowledgeable engineers in the Python core dev team.
+So I think that a lot of people should appreciate their
+
+42
+00:04:49,538 --> 00:04:56,81
+work, because it is really, really hard to move such a
+project. And can you please tell me about like, what is
+
+43
+00:04:56,91 --> 00:05:05,056
+a daily job of a Steering Council member? What do you do
+daily? What are your like, duties? Yeah,
+
+44
+00:05:05,096 --> 00:05:11,85
+so the first big change since I started my
+Steering Council work
+
+45
+00:05:11,87 --> 00:05:23,024
+is, to be honest, that I didn't read the PEPs as
+many as these days. But after I got promoted, after I
+
+46
+00:05:23,145 --> 00:05:30,025
+was elected as the Steering Council member, I obviously, I
+read all the PEPs, you know, three PEPs in a week,
+
+47
+00:05:30,045 --> 00:05:41,738
+and we actually discussed every bunch of PEPs in every
+weekly meeting.
+
+48
+00:05:41,859 --> 00:05:52,894
+In my time zone it is at 5 a.m., around 6 a.m. Friday, and we
+discuss the bunch of the PEPs that are on the list
+
+49
+00:05:53,235 --> 00:06:01,602
+for today. And then we discuss about each of the
+PEP, why it should be accepted, or
+
+50
+00:06:01,883 --> 00:06:09,472
+why it should be rejected, or why it should be
+updated to be more persuadable PEP for the SC
+
+51
+00:06:09,492 --> 00:06:17,942
+members. That's our normal task. And then the
+other stuff are actually included, like,
+
+52
+00:06:18,383 --> 00:06:25,552
+as you know, once you are promoted as the Python
+core dev, then you can, get a travel grant for the US
+
+53
+00:06:26,513 --> 00:06:34,003
+PyCon, then we should decide about the travel
+grant. And we need to discuss it with the member of the
+
+54
+00:06:34,063 --> 00:06:45,177
+PSF. And that kind of tasks are actually handled at every
+weekly meeting. So let's say that I want to write a PEP.
+
+55
+00:06:45,197 --> 00:06:55,234
+What should I start with? So if you are core dev, you
+can just write a PEP. And you can just share the draft
+
+56
+00:06:55,254 --> 00:07:03,723
+of PEP at the discuss.python.org. And then people
+will comment about it. And then finally, the
+
+57
+00:07:03,944 --> 00:07:11,452
+Steering Council members can review your PEP. But if
+you are not a core dev, you maybe need to find a
+
+58
+00:07:11,512 --> 00:07:19,582
+person who will sponsor your PEP. So that's the main
+difference between if the author is a core devs or
+
+59
+00:07:19,682 --> 00:07:28,092
+not. Let's say that I found someone from the core team
+who wants to sponsor this PEP that I wrote. What should
+
+60
+00:07:28,172 --> 00:07:36,643
+I put in this PEP for it to be accepted? Like, what are
+the sections, what are the examples and stuff like
+
+61
+00:07:36,683 --> 00:07:45,582
+this? Yeah, so there's a lot of PEPs that we
+actually accept. So there are many kinds of PEPs.
+
+62
+00:07:45,642 --> 00:07:51,739
+Sometimes it is a technical stuff and
+something it is a government stuff. So it's up to you what you
+
+63
+00:07:51,779 --> 00:08:01,536
+want to write. If you want to write the technical PEP,
+so you may need to fill why this PEP is needed and why
+
+64
+00:08:01,576 --> 00:08:09,791
+this PEP will give an advantage for the Python users
+and how we will not actually break a lot of things. It's
+
+65
+00:08:09,851 --> 00:08:17,496
+very important for the Python devs, because we are
+managing the, the very, very large code base, one of the biggest in
+
+66
+00:08:17,857 --> 00:08:23,964
+the world. So we are very careful in terms of the
+compatibility. And then, and also you should
+
+67
+00:08:25,085 --> 00:08:35,678
+persuade, like, how it will be effective, how it will
+affect a lot of code bases, you know, numerous
+
+68
+00:08:35,798 --> 00:08:43,491
+static stuff. So that kind of info should be included
+in your PEP. It is not that different from the technical
+
+69
+00:08:43,731 --> 00:08:49,296
+documentation that you are writing at any company. So
+if you're working at any tech company,
+
+70
+00:08:49,316 --> 00:08:56,743
+you are probably writing technical docs there,
+then it will be the same for the PEP.
+
+71
+00:08:56,783 --> 00:09:04,089
+Okay. Do you have any personal goals as a
+Steering Council member? For example, do you have any
+
+72
+00:09:04,61 --> 00:09:11,338
+big change that you want to achieve in the technical
+part of CPython or something like that? Oh, yes,
+
+73
+00:09:11,358 --> 00:09:16,806
+there are two things. First thing is a technical
+goal and the other thing is a non-technical one.
+
+74
+00:09:16,826 --> 00:09:28,464
+And so talking about the technical stuff, as you know,
+I'm very interested in the free-threading work. So I
+
+75
+00:09:28,824 --> 00:09:37,717
+think that I try to support the successful ending for
+the free-threading project. And, and if there is
+
+76
+00:09:37,777 --> 00:09:44,445
+something that needs an extra support, I will try to support them. And
+the other thing is the Faster CPython project.
+
+77
+00:09:44,766 --> 00:09:53,136
+There are many experimentation, including the JIT or
+Tier 2 interpreter. There are common areas for
+
+78
+00:09:53,176 --> 00:10:00,945
+the free-threading and Faster CPython.
+And the collaboration betwee the two is very, very
+
+79
+00:10:01,426 --> 00:10:09,658
+important. So I try to support them as well. Also these days
+many people are actually talking about the
+
+80
+00:10:09,978 --> 00:10:21,294
+ARM CPU, because unlike the x86, the ARM CPU
+is very energy efficient and it affects
+
+81
+00:10:21,314 --> 00:10:30,568
+cloud pricing, that's why people are very interested
+in using the ARM chips. But we need more efforts
+
+82
+00:10:30,608 --> 00:10:41,004
+for the more optimized CPython on the ARM. So, I try to
+support all people who work on that. So that's my main
+
+83
+00:10:41,024 --> 00:10:49,077
+technical interests. Secondly, as you know,
+many of the core devs are actually staying in the North
+
+84
+00:10:49,117 --> 00:10:57,365
+America and in Europe, mostly Western Europe. In
+APAC region, like Asia, Tokyo, or Korea, or
+
+85
+00:10:57,405 --> 00:11:04,295
+Singapore, or China, like there are just a few of core
+devs here. So I try to
+
+86
+00:11:04,415 --> 00:11:14,489
+represent our tech companies,
+when they're working on the CPython and try to
+
+87
+00:11:15,049 --> 00:11:22,35
+represent their needs. And also I try to organize the
+local core sprint, like that people can actually
+
+88
+00:11:22,43 --> 00:11:30,877
+participate even though only a few of the core devs stay
+in a APAC region. So that are two my main goals as the
+
+89
+00:11:31,358 --> 00:11:39,231
+Steering Council member for this year. Yeah, noble
+goals. I think that we should all support your deeds in
+
+90
+00:11:39,251 --> 00:11:47,832
+this field because I think that free-threading is a big
+feature and it should be the next milestone of Python
+
+91
+00:11:47,872 --> 00:11:53,222
+development and the next big milestone for the
+language itself. Yeah, really appreciate it. We have
+
+92
+00:11:53,262 --> 00:12:02,474
+one more question about your Steering Council work. I
+think that there are a lot of interesting PEPs that you
+
+93
+00:12:02,514 --> 00:12:10,164
+review and maybe you can name some of them like the most
+interesting ones to you or like the most technically
+
+94
+00:12:11,265 --> 00:12:19,536
+challenging, something like your top three PEPs that
+are in the works right now. Okay, so I actually cannot
+
+95
+00:12:19,556 --> 00:12:27,509
+pick the three PEPs at this moment. There are a lot of
+PEPs, but I can just pick
+
+96
+00:12:27,629 --> 00:12:39,387
+one. So one of my best PEPs, maybe of this year for me, is
+the PEPs 765 written by Irit Katriel. It's about
+
+97
+00:12:39,607 --> 00:12:47,271
+disallowing the return/break/continue at the finally
+block. This PEP is very well written
+
+98
+00:12:47,291 --> 00:12:57,501
+because it is very well researched. For example:
+how many people are actually using the wrong
+
+99
+00:12:57,561 --> 00:13:05,47
+Python code. And then, it actually suggests
+a way how to fix people's code
+
+100
+00:13:05,51 --> 00:13:15,975
+in a natural way without breaking anything. So,
+for me, it's the best PEP of this year, because it's
+
+101
+00:13:16,015 --> 00:13:25,437
+very persuasive and it also provides the statistics
+and it also provides a way to write a
+
+102
+00:13:25,478 --> 00:13:34,727
+better code. So both technical and non-technical
+stuff are great. I learned a lot of things from this PEP, so for
+
+103
+00:13:34,767 --> 00:13:43,59
+me, this PEP was the best that I read until this
+February. Maybe after this February we will have more great PEPs.
+
+104
+00:13:43,63 --> 00:13:50,985
+but for me, at this moment, this was the best PEP. I
+agree. That's a really great PEP. And I think that it
+
+105
+00:13:51,045 --> 00:14:03,079
+was one of the most problematic parts of the Python
+syntax. And I think that a lot of real-world code had
+
+106
+00:14:03,099 --> 00:14:12,727
+this bug. And it's great that we have ways now to fix it
+in a wider sense. Okay, we also want to talk about your
+
+107
+00:14:12,807 --> 00:14:22,015
+free-threading work because Steering Council is
+something like very few people touch but free-threading
+
+108
+00:14:22,295 --> 00:14:30,882
+is something for everyone. So, can you please explain
+what free-threading is in a very brief words for people
+
+109
+00:14:30,942 --> 00:14:40,05
+who are not familiar with it yet, because 3.13 was not so
+long ago and it still has this thing switched off by
+
+110
+00:14:40,07 --> 00:14:48,4
+default. Yeah, so I'm very happy to see that you are not
+using the term no-GIL.
+
+111
+00:14:48,821 --> 00:14:57,611
+Basically, free-threading is the project which tries to
+remove the GIL. And to be honest, it is at the
+
+112
+00:14:57,771 --> 00:15:05,86
+experimental stage of the CPython at this moment. And
+we are using the official term "free-threading"
+
+113
+00:15:05,98 --> 00:15:14,499
+instead of "no-GIL". So if you are using the "no-GIL",
+then you should change the term. So there was a lot of
+
+114
+00:15:14,579 --> 00:15:21,348
+tries to remove the GIL from the early years of the CPython.
+And many people tried to, and many people
+
+115
+00:15:21,368 --> 00:15:30,16
+actually failed. But a few years ago, I cannot remember
+which year, Sam Gross, who works at
+
+116
+00:15:30,48 --> 00:15:37,93
+Facebook* (organization is forbidden in Russia) AI Research,
+actually sent a mail that he succeed to remove GIL. And I believe that
+
+117
+00:15:38,062 --> 00:15:45,714
+nobody believed that the project was successful at
+that moment. Several people said: please show your
+
+118
+00:15:45,794 --> 00:15:52,945
+benchmarks. And then Sam showed the successful
+benchmark from the early release and everybody become
+
+119
+00:15:53,006 --> 00:15:59,998
+surprised. And here we are two years later.
+But, we still need the time for the analysis
+
+120
+00:16:00,158 --> 00:16:05,127
+There's a lot of components at the
+free-threading, like using the mimalloc and
+
+121
+00:16:05,168 --> 00:16:13,896
+new reference counting. And it took more
+than two years, from Python 3.13 to this very moment.
+
+122
+00:16:14,157 --> 00:16:22,358
+Many people actually participate in a
+free-threading project. And most of people are
+
+123
+00:16:22,498 --> 00:16:28,774
+actually from Meta* (organization is forbidden in Russia),
+because Meta* funded the project and still support it.
+
+124
+00:16:30,003 --> 00:16:38,073
+At the early stage, I actually had to set up the initial CI
+for using the GitHub Action for the free-threading CPython build
+
+125
+00:16:38,233 --> 00:16:44,02
+This is very technical, but very basic stuff, because we
+need to verify that the free-threading
+
+126
+00:16:44,04 --> 00:16:52,95
+Python is working well. And then, another thing is
+that I was focused on making the Python runtime
+
+127
+00:16:53,11 --> 00:16:59,919
+compatible with the free-threading project, because,
+one of the biggest technical challenge we are
+
+128
+00:16:59,979 --> 00:17:07,511
+facing with the free-threading Python is that we don't want to
+make a lot of the fragmentations between the regular
+
+129
+00:17:07,912 --> 00:17:15,565
+build and the free-threading build. Because, if
+you remove the GIL, everything suddenly is not
+
+130
+00:17:15,625 --> 00:17:24,48
+thread-safe. So at the Python runtime, we need to care
+about the data and thread-safety,
+
+131
+00:17:24,861 --> 00:17:32,038
+but you know, there are locks, critical sections,
+and atomic operations. You said two very important
+
+132
+00:17:32,439 --> 00:17:40,138
+phrases: atomics and critical sections. Can you
+please explain what these are for a wider audience?
+
+133
+00:17:40,237 --> 00:17:49,693
+Okay, so critical section is a sections that
+will guarantee the thread safety
+
+134
+00:17:49,713 --> 00:17:59,329
+without using an explicit lock. To simplify,
+just one thread can be involved in this
+
+135
+00:17:59,369 --> 00:18:07,043
+section, so everything will be thread safe in this
+section by definition, but the downside is, obviously, the cost.
+
+136
+00:18:07,083 --> 00:18:13,949
+The downside of the critical section is that be there
+could be a performance slowdown because the other
+
+137
+00:18:13,989 --> 00:18:23,137
+thread cannot be involve at this section and has to wait. But yeah,
+sometimes we need this feature. And atomic operations are not
+
+138
+00:18:23,197 --> 00:18:32,125
+like critical sections, they represent lower-level
+operations that can be processed in a single atomic way. So even if the
+
+139
+00:18:32,145 --> 00:18:40,032
+multiple threads try to modify a single atomic integer,
+it is guaranteed that there will be no race, and it will modified
+
+140
+00:18:40,534 --> 00:18:49,394
+one by one. So, but this does not guarantee the
+correct transaction inside the python objects. So,
+
+141
+00:18:49,594 --> 00:18:56,945
+the use case can be different between the critical
+sections and atomic operations. Note that
+
+142
+00:18:57,085 --> 00:19:01,821
+everything is happening in a C code base. So if you're
+just pure Python users, you don't have to care about it, but if
+
+143
+00:19:01,921 --> 00:19:09,284
+you are a C extension maintainer, then maybe you
+need to care about it. Yeah. You totally need to care
+
+144
+00:19:09,344 --> 00:19:16,152
+about it because you will totally need to support free-threading
+in some time in the future. And basically you
+
+145
+00:19:16,172 --> 00:19:23,86
+can say it like this. Atomic is a primitive supported by
+the compiler. Critical section is our own concept
+
+146
+00:19:23,88 --> 00:19:31,148
+that CPython maintains and supports as a feature.
+What about C extensions? Do authors of C extensions
+
+147
+00:19:31,268 --> 00:19:38,296
+would need to support free-threading soon? Yes,
+definitely. Maybe some of them do not need to
+
+148
+00:19:38,356 --> 00:19:47,066
+change anything, but I believe that, when you think about
+why people actually writing a C extension, it's mostly
+
+149
+00:19:47,086 --> 00:19:55,997
+because of the performance issues. So, there might be
+just pure C code that is not related to any Python
+
+150
+00:19:56,057 --> 00:20:05,795
+objects. So in that case, you don't really have to care about Python API.
+But, if you work with Python C-API,
+
+151
+00:20:05,835 --> 00:20:13,209
+in that case, you need to care about new race conditions.
+Even if you are
+
+152
+00:20:13,249 --> 00:20:22,559
+y using the C-API that provides borrowed reference
+count, then it will not guarantee the thread safety.
+
+153
+00:20:22,599 --> 00:20:30,427
+So, you have to change to be using the explicit reference
+count API. And then if you care about this stuff, like
+
+154
+00:20:30,547 --> 00:20:36,393
+if you search in the documentation, we already
+provide all the info about it. So you can read it and you can
+
+155
+00:20:36,413 --> 00:20:44,642
+switch to it. And if there is something that you need, like more API,
+then you can just file an issue, in the CPython repo,
+
+156
+00:20:44,722 --> 00:20:52,951
+then people will interact with your needs. I think
+that reference counting changed quite a bit in the
+
+157
+00:20:53,052 --> 00:21:03,271
+free-threading build. Can you please specify how and
+what changed about it? Yeah, it's very technical
+
+158
+00:21:03,331 --> 00:21:11,326
+stuff. So I'm not sure I can explain very easily,
+like in a simple way. Okay. So by default with the GIL,
+
+159
+00:21:11,366 --> 00:21:21,325
+there's just one reference count. This is why we needed the GIL
+before the free-threading build, because with multiple threads,
+
+160
+00:21:21,345 --> 00:21:30,323
+if they all try to modify the reference count,
+there will be a race condition. We need a lock.
+
+161
+00:21:30,443 --> 00:21:37,032
+In regular builds this lock is actually the GIL in the default build.
+But the free-threading build, there are
+
+162
+00:21:37,072 --> 00:21:46,527
+two reference counts. One is a shared reference
+count, and the other is, sorry I can't remember the other name.
+
+163
+00:21:46,768 --> 00:21:57,685
+But it's a reference count for
+the owner's thread. If the thread owns this object,
+
+164
+00:21:58,12 --> 00:22:08,839
+this thread can modify this reference count by itself
+without any atomic operation or locks. So, it will be
+
+165
+00:22:08,879 --> 00:22:18,296
+very fast. And if the other thread shares the same object,
+they actually modify the shared reference count.
+
+166
+00:22:18,616 --> 00:22:28,132
+And it will be modified by the atomic operation, and then it will
+be merged by the internal process. So it will be
+
+167
+00:22:28,192 --> 00:22:37,307
+guarantee the thread safety of the total
+reference count value. The basic hypothesis of this
+
+168
+00:22:37,844 --> 00:22:45,372
+approach is that the most of Python objects are
+actually owned by a single thread. In most cases, we
+
+169
+00:22:45,392 --> 00:22:54,101
+don't care about the shared reference count, but in some
+cases, when they need to be shared with the other thread,
+
+170
+00:22:54,241 --> 00:23:00,027
+then they will modify shared reference count, and
+there will be a small slowdown, but we can
+
+171
+00:23:00,127 --> 00:23:12,648
+overcome it. And if some object, CodeObject is
+a good example, that can be accessed by
+
+172
+00:23:12,668 --> 00:23:19,081
+multiple threads. In the case, we are actually using a
+deferred reference count. And this technique means that
+
+173
+00:23:21,005 --> 00:23:31,469
+we delay the reference count to a some point in the future. So,
+we can see that we have successfully overcomed multiple issues
+
+174
+00:23:31,99 --> 00:23:38,558
+tbat happened when we removed the GIL, as you can see, there are
+multiple techniques to do so. This is what
+
+175
+00:23:38,678 --> 00:23:43,805
+happened at the free-threading project. I'm not sure
+this is the easiest explanation, but this is my best
+
+176
+00:23:44,245 --> 00:23:51,254
+effort. Yeah. I think you did a great job. I really
+appreciate your explanation. Thank you. I also think
+
+177
+00:23:51,294 --> 00:23:57,944
+that we should mention how new GC will work, because if
+we touched reference counts, I think it's fair to
+
+178
+00:23:58,004 --> 00:24:04,553
+touch GC as well. Can you please share your thoughts
+about the future of GC and the work that has been done on
+
+179
+00:24:04,614 --> 00:24:13,947
+it? Yeah, so I'm not the expert of the GC, so I can't
+explain deep stuff in this talk. Yeah, me
+
+180
+00:24:13,967 --> 00:24:21,699
+neither. I have no idea how it works inside. It's too
+complex. Yeah, but two things, maybe. We introduced
+
+181
+00:24:21,739 --> 00:24:29,193
+Stop the World concept. It did not exist in the default build.
+It will be enabled in free-threading build.
+
+182
+00:24:29,254 --> 00:24:35,865
+And this is same mechanism when, if you're using Java or
+several other languages, because we need to stop
+
+183
+00:24:35,925 --> 00:24:45,861
+everything and the GC needs to collect all unusable
+objects. This is really important
+
+184
+00:24:46,583 --> 00:24:52,852
+for the interpreter. The other thing is, if I
+remember correctly, Mark Shannon is working on the
+
+185
+00:24:52,892 --> 00:25:00,719
+incremental GC, it's the
+same as the term, like it's handled incrementally, so
+
+186
+00:25:01,16 --> 00:25:07,832
+you can expect a faster GC, but at the moment,
+I cannot remember the progress of the
+
+187
+00:25:07,852 --> 00:25:13,803
+incremental GC, so I think you may want to open an original
+issue to find out more. Because I'm not the expert at
+
+188
+00:25:14,004 --> 00:25:23,238
+this area. I think that we had a very interesting bug
+back in 3.13, when in the last release candidate, when the
+
+189
+00:25:23,278 --> 00:25:30,508
+new GC was merged, and it slowed down a lot of cases for
+several noticeable percents, let's say it like this.
+
+190
+00:25:31,149 --> 00:25:40,683
+And people were very fast to create a new release
+candidate and to revert the GC change. And now we will
+
+191
+00:25:40,724 --> 00:25:49,481
+have the new GC in 3.14. I think so, at least I hope so,
+because this is a really big piece of work and not a lot
+
+192
+00:25:49,521 --> 00:25:58,372
+of people are aware of how hard it is to actually
+implement a garbage collector for language like
+
+193
+00:25:58,472 --> 00:26:07,643
+Python with all the backward compatibility
+guarantees in place. So you said that you are very
+
+194
+00:26:07,723 --> 00:26:15,683
+interested in ARM support and free-threading support.
+Do you have any specific work or specific issues that
+
+195
+00:26:15,723 --> 00:26:24,856
+you have in mind that are touching both of these
+topics? Yeah, so one thing I didn't talk about when I
+
+196
+00:26:24,916 --> 00:26:32,427
+explained the free-threading, as you know,
+Python 3.13 is just a kind of a pure proof of concept
+
+197
+00:26:32,707 --> 00:26:39,136
+version of the free-threading. And I know that people
+are actually disappointed with the single thread
+
+198
+00:26:39,217 --> 00:26:48,953
+performance issues in the free-threading build, it's very slow.
+Because when the free-threading was introduced, if I remember
+
+199
+00:26:48,973 --> 00:26:57,37
+correctly, it was based on the Python 3.9 and it didn't
+have the specializing interpreter that was written
+
+200
+00:26:57,43 --> 00:27:07,997
+by Mark Shannon. He's a very great man. So when we
+ported the Python free-threading, we didn't port the
+
+201
+00:27:08,858 --> 00:27:16,809
+special writer at the Python 3.13. So that's the main
+reason the free-threading was, the single thread of
+
+202
+00:27:16,909 --> 00:27:27,52
+free-threading is slow. So, but at the free 3.14,
+Matt Page, Ken Jin, Sam Gross, and I, and Thomas
+
+203
+00:27:27,56 --> 00:27:36,213
+Wouters, and a lot of people actually joined. And we
+successed to port the most of cases of the specializer to
+
+204
+00:27:36,233 --> 00:27:45,105
+be thread safe with using the per-thread mechanism.
+So, we actually ran the benchmark a few weeks ago
+
+205
+00:27:45,726 --> 00:27:57,047
+between the GIL build and the free-threading. And it
+now has 90% performance of the GIL build, so it's a lot
+
+206
+00:27:57,107 --> 00:28:05,295
+faster. So if you are using the free-threading at the
+Python 3.14, you will not be disappointed with the single
+
+207
+00:28:05,335 --> 00:28:11,22
+thread performance. And more awesome things, you
+know, like Ken Jin also introduced the tail call dispatch.
+
+208
+00:28:11,26 --> 00:28:23,068
+It can be used at, if your Python is built
+by clang 19. And we noticed that the
+
+209
+00:28:23,128 --> 00:28:32,872
+the free-threading Python build with the Clang 19 and
+the tail call dispatch is faster the 3.13 JIT build. So
+
+210
+00:28:33,973 --> 00:28:41,044
+you can enjoy everything. But if you are using the
+technical specs with the default build, it will be faster.
+
+211
+00:28:41,064 --> 00:28:48,095
+I'm not sure like how to explain, but,
+there are so many magical things that will happen in 3.14
+
+212
+00:28:48,175 --> 00:28:56,488
+So you can enjoy it. That's my simple
+explanation. There were many attempts to make
+
+213
+00:28:56,975 --> 00:29:05,55
+Python bytecode dispatch logic be faster.
+The first technique we are using is "computed goto".
+
+214
+00:29:05,57 --> 00:29:17,653
+And I think that this was the best effort for many
+years. But starting from Clang 19, you can give a hint to the compiler,
+
+215
+00:29:18,053 --> 00:29:28,044
+to do the tail call dispatch. It's the same term that if you run
+the algorithm, between the recursive call and
+
+216
+00:29:28,164 --> 00:29:38,575
+tail call, the later will be faster because it
+doesn't need extra stack space and extra overhead, and
+
+217
+00:29:38,735 --> 00:29:51,305
+it also provides a kind of register optimization,
+but it needs to be modified to be more familiar with the
+
+218
+00:29:51,405 --> 00:30:03,578
+tail call dispatch logic. At the moment Ken Jin is actually
+re-writing a code generator to be more familiar with
+
+219
+00:30:03,598 --> 00:30:13,376
+the tail call optimization. Then if this tail call
+dispatch is built by Clang 19, its performance
+
+220
+00:30:13,496 --> 00:30:23,814
+enhancement is almost 10%. So it is a very
+amazing project. I think you can expect it soon.
+
+221
+00:30:23,834 --> 00:30:31,285
+Even if you don't know about the technical stuff about
+how tail call dispatch works,
+
+222
+00:30:31,305 --> 00:30:39,538
+you can just use `uv`. And if you
+use `uv` to install python 3.14
+
+223
+00:30:40,419 --> 00:30:49,232
+They are already building Python 3.14 by
+Clang 19. So you can just be using it.
+
+224
+00:30:49,252 --> 00:30:58,623
+It is an awesome feature, I think. Yeah, it is one more
+optimization, even better than computed GOTOs for
+
+225
+00:30:58,683 --> 00:31:05,471
+bytecode dispatch, and you should totally give it a
+try. I think that it will be disabled by default for
+
+226
+00:31:05,511 --> 00:31:16,638
+this release. Am I wrong? Yeah, you're right. This is
+my personal opinion about this decision, but this
+
+227
+00:31:16,699 --> 00:31:26,118
+is still in a consideration, okay?
+The decision is not final. I believe that the
+
+228
+00:31:26,138 --> 00:31:35,142
+technical dispatch will not make big troubles, but
+we cannot guarantee any safety
+
+229
+00:31:35,362 --> 00:31:42,194
+at this moment, because we need to know that actual
+people are using it. There could be unexpected bugs.
+
+230
+00:31:42,214 --> 00:31:50,965
+Then we need to fix them. So, but if you can't enable it by default
+in the Python 3.14. When you get the feedback, it might
+
+231
+00:31:50,985 --> 00:32:01,459
+take one or two years. It could be late. So people will
+be in pain if there are bugs. So the right path is to
+
+232
+00:32:01,479 --> 00:32:09,089
+have it disabled to guarantee the more stable behavior. But
+as I said, the `uv` actually already provides the
+
+233
+00:32:09,129 --> 00:32:15,898
+tail call dispatch from Python 3.14. You can
+just test it and use it. And if there's no problem, it
+
+234
+00:32:15,918 --> 00:32:23,55
+might be enabled by default in the future.
+Okay, I think that you've touched on one more very
+
+235
+00:32:23,59 --> 00:32:31,742
+interesting topic that I didn't specify in my
+previous notes for you. But Relocatable Build is
+
+236
+00:32:32,043 --> 00:32:37,571
+also a very interesting big project that a lot of
+people are working on right now. Can you please
+
+237
+00:32:37,651 --> 00:32:47,076
+explain how is it related to Python and what is going on
+over there? Yeah. So, if you're using `uv`,
+
+238
+00:32:47,096 --> 00:32:56,691
+especially the part with the CPython distribution,
+you're actually using a different Python binary that is actually
+
+239
+00:32:56,751 --> 00:33:07,569
+based on astandalone Python build, it is like
+using the static build, which is focused on the
+
+240
+00:33:07,609 --> 00:33:14,721
+compatibility with the multiple platforms with just a
+single build. So this is a very amazing project because
+
+241
+00:33:16,203 --> 00:33:29,95
+some of the people who work with a closed internet, or if
+there's no internet, So it's just a one more new way to
+
+242
+00:33:30,25 --> 00:33:38,85
+deploy multiple Python distributions. This is a very
+amazing project. If you're using the `uv python install`, you are
+
+243
+00:33:39,492 --> 00:33:52,758
+using this relocatable build concept. People from
+Astral is now working closely with CPython devs to make
+
+244
+00:33:53,099 --> 00:34:01,13
+relocatable builds easier and faster and less error
+prone because there are some bugs. I think that a lot of
+
+245
+00:34:01,35 --> 00:34:09,401
+problems on the relocatable builds are related to
+our BOLT optimization. I saw like maybe five tickets
+
+246
+00:34:09,441 --> 00:34:17,215
+about it, something like that. Yeah. We need to
+separate these two topics with this issue,
+
+247
+00:34:17,235 --> 00:34:24,765
+because they are building Python
+using a static build, with no dynamic linking.
+
+248
+00:34:24,865 --> 00:34:34,737
+You can expect that the final binary is huge,
+way bigger than the normal Python binary.
+
+249
+00:34:34,797 --> 00:34:42,754
+So, BOLT is an optimizer tool that is developed by Meta*
+(organization is forbidden in Russia)
+
+250
+00:34:43,417 --> 00:34:50,526
+and there are multiple compiler optimization
+techniques, the basic stuff might be if you pass the
+
+251
+00:34:50,706 --> 00:35:01,062
+option `-01`, `-02`, `-03` to the GCC, the compiler will
+optimize your code, via their policy. And that's the one
+
+252
+00:35:01,102 --> 00:35:13,188
+part of the optimization process. And the other one
+is PGO, it actually gathered the
+
+253
+00:35:13,208 --> 00:35:22,841
+profiling from your runtime and then regenerate the
+binary by the compiler. That we call normal compiler
+
+254
+00:35:22,901 --> 00:35:32,914
+optimizer process. But the other stuff is what we call the
+post-binary optimizer. Since the binary is huge,
+
+255
+00:35:34,557 --> 00:35:42,195
+there's a lot of error and cache miss ratio.
+And so the one of the techniques they are
+
+256
+00:35:42,296 --> 00:35:50,19
+using is like the same as the PGO. They actually gather
+the profiles in two ways. One is the
+
+257
+00:35:50,23 --> 00:35:55,499
+instrumentation and the other way is like,
+live, like in production traffic
+
+258
+00:35:56,02 --> 00:36:06,659
+profiling. And then they relocate the
+binary layout to be more optimized with the cache,
+
+259
+00:36:06,679 --> 00:36:14,061
+add-on cache. For example, if some of your code area is
+exported very frequently, they are clustered. And if
+
+260
+00:36:14,181 --> 00:36:24,316
+this is less executed area, they are separated from the
+core area. And then we can expect that the cache miss is
+
+261
+00:36:24,817 --> 00:36:31,727
+reduced. And then they also eliminate unnecessary
+binary area. The final binary size can be reduced. So that's
+
+262
+00:36:31,787 --> 00:36:37,516
+why they are working on BOLT because like they are
+major customer who is using BOLT. We added
+
+263
+00:36:37,977 --> 00:36:45,374
+the BOLT support in, maybe, 3.13 to CPython. I don't remember
+correctly, This is why they are actually
+
+264
+00:36:45,434 --> 00:36:54,747
+working on it. I think that BOLT was introduced in
+Python 3.12. Yeah, 3.12, right. Something like that. And
+
+265
+00:36:54,847 --> 00:37:04,018
+I think that you were the person who contributed it. So,
+it's one more big project from you. Let's give a
+
+266
+00:37:04,038 --> 00:37:16,372
+credit. But I have to say, BOLT was actually a
+first attempted from the Pyston people.
+
+267
+00:37:16,392 --> 00:37:25,31
+People who worked at Dropbox and then they developed
+the Pyston version of Python at Dropbox.
+
+268
+00:37:25,571 --> 00:37:34,423
+After they left Dropbox, they organized
+Faster CPython project.
+
+269
+00:37:35,084 --> 00:37:41,593
+In Pyston one of the optimization
+they were using was BOLT. We actually
+
+270
+00:37:41,653 --> 00:37:52,251
+adopted their technique. I want to say that the major
+works were done by those people and my work was like
+
+271
+00:37:52,451 --> 00:37:58,346
+supporting the BOLT PR landing, for example,
+in detecting parts where we can use it. So I thank you for
+
+272
+00:37:58,447 --> 00:38:07,973
+the credit, but I need to clarify that. And also credit other
+people. Yeah. Okay, so I think that I have
+
+273
+00:38:08,514 --> 00:38:16,865
+one last technical question, but it is also a very deep
+one, so let's prepare our audience for it. I think that
+
+274
+00:38:17,546 --> 00:38:26,698
+in Python 3.14 there will be a big change to our JIT
+pipeline, because right now we require LLVM as a build
+
+275
+00:38:26,738 --> 00:38:34,348
+time dependency. and it is proposed to eliminate that
+dependency in the build time. Do you have any
+
+276
+00:38:34,388 --> 00:38:42,818
+information about it? Like, what is going to happen
+and how it works? Yeah, so like there is a trial to
+
+277
+00:38:42,878 --> 00:38:50,327
+remove the build dependency for the LLVM in the
+CPython, but there's also a PEP about it,
+
+278
+00:38:50,367 --> 00:38:58,237
+and Steering Council actually review this PEP at the moment.
+So, at the moment, I cannot say anything about the PEP.
+
+279
+00:38:58,258 --> 00:39:05,868
+It would be hard for me at this moment.
+Okay, yeah, completely understand it.
+
+280
+00:39:05,888 --> 00:39:14,119
+I think that we should put a link to this PEP in the
+description so people can read it and express their
+
+281
+00:39:14,159 --> 00:39:22,869
+opinion in the discussion thread, in the discourse,
+if they have such opinions. This is my personal
+
+282
+00:39:22,949 --> 00:39:31,381
+opinion, but if we successful end this project,
+those build tasks will not be needed.
+
+283
+00:39:31,401 --> 00:39:40,293
+So, yeah, that would be a very important PEP
+for the project. But, the final decision will be, will
+
+284
+00:39:40,313 --> 00:39:46,922
+be handled by Steering Council. So I cannot say
+anything. Okay. Okay. I don't have any opinion
+
+285
+00:39:47,102 --> 00:39:54,767
+either, because this is way out of my expertise area.
+One last question about your other
+
+286
+00:39:54,787 --> 00:40:03,401
+activity. You said that you also organize sprints in
+your hometown and that you invite people to join and
+
+287
+00:40:03,481 --> 00:40:09,771
+participate. Can you please tell a little bit more
+about what these sprints are and what are the results
+
+288
+00:40:09,931 --> 00:40:17,062
+and how you organize them? What should people do
+there? Yeah, so every region, there might be a lot of
+
+289
+00:40:17,202 --> 00:40:25,794
+local sprints for the CPython development, but like in Korea or
+Japan or Thailand, maybe Russia, I know that
+
+290
+00:40:25,954 --> 00:40:34,406
+there are no sprints that are organized by core
+developers. So for some people, it might be
+
+291
+00:40:34,866 --> 00:40:43,724
+difficult to participate in US PyCon because of the
+financial issues, distance,
+
+292
+00:40:43,844 --> 00:40:56,221
+or finance, or busy schedule. So I try to
+organize the sprint that you can work on the CPython in
+
+293
+00:40:56,261 --> 00:41:04,85
+a single day in Korea. I try to provide the help and the
+manual about how you can contribute to
+
+294
+00:41:04,89 --> 00:41:12,198
+CPython and how to run the CI, how to run the new tasks,
+and how you can write new code, and how to get
+
+295
+00:41:12,298 --> 00:41:24,201
+a review from the CPython team. That is one of my
+trial to organize a sprint at my local area.
+
+296
+00:41:24,221 --> 00:41:31,634
+Because I think that those kinds of activity is
+one of the ways that people can improve the
+
+297
+00:41:31,694 --> 00:41:38,126
+community driven ranking in CPython. People
+represent their stance and what their needs are and
+
+298
+00:41:38,266 --> 00:41:44,296
+if they take a part in solving issues, so they can be
+more familiar with the process. So I believe that such activity can
+
+299
+00:41:44,357 --> 00:41:54,063
+make more interactions between the Python core team
+and other people.
+
+300
+00:41:54,103 --> 00:42:02,082
+Thank you. This is a really great activity,
+and I hope one day to
+
+301
+00:42:02,162 --> 00:42:07,871
+participate in such events, or maybe even organize
+it, because I completely agree. Letting people know
+
+302
+00:42:07,911 --> 00:42:18,006
+that contributing to CPython is easy and fun is a big
+goal, because a lot of people assume that it is a hard
+
+303
+00:42:18,567 --> 00:42:28,564
+work that is not fun, but it is a hard work that is fun.
+And I think that a lot of people should know that you can
+
+304
+00:42:28,604 --> 00:42:35,617
+do it and you should do it. And I try to encourage people
+with my videos as well to contribute to CPython, to
+
+305
+00:42:35,697 --> 00:42:44,83
+report issues about some unexpected behavior and
+stuff like that. So this year,
+
+306
+00:42:44,87 --> 00:42:51,478
+in my schedule is South Korea,
+I try to organize it around August. So if you visit
+
+307
+00:42:51,538 --> 00:43:02,43
+Korea, maybe PyKR is happening at August 15th. So you
+can join the sprint if you visit Korea. And I also plan
+
+308
+00:43:02,49 --> 00:43:11,947
+to visit Taiwan this year. So maybe if you have a plan
+to visit Taiwan, maybe you can also visit the sprint.
+
+309
+00:43:12,067 --> 00:43:20,362
+And if there are other chances, I will try to support them as well.
+And I think that you also can maybe organize a sprint. So if you need
+
+310
+00:43:20,602 --> 00:43:31,702
+kind of resources for the local sprint, I happily
+provide what I use for the local sprint at the Tokyo or
+
+311
+00:43:31,722 --> 00:43:41,471
+Seoul or any other area. Awesome. Thank you. And once
+again, very big respect for your work on CPython and
+
+312
+00:43:41,592 --> 00:43:48,446
+your Steering Council work. We should really
+appreciate people like you and give credit for all the
+
+313
+00:43:48,486 --> 00:43:55,26
+hard work they do for all of the rest of the world.
+Thanks again, and thank you for coming and giving this
+
+314
+00:43:55,341 --> 00:44:02,615
+interview. And I hope people will enjoy it. And if you
+leave your contacts, your GitHub handle, for
+
+315
+00:44:02,675 --> 00:44:11,604
+example, and people will have some questions about
+free-threading issues, can they tag you? Yeah, so I will
+
+316
+00:44:11,644 --> 00:44:21,816
+provide my GitHub username. My handle is actually a very
+weird name. It's @corona10. It's not related to that
+
+317
+00:44:21,836 --> 00:44:32,828
+Corona. Yeah, but I'm using it before maybe 2019, so I
+don't care about it. So my handle at GitHub is @corona10
+
+318
+00:44:32,948 --> 00:44:45,708
+and my Twitter is @dongheena92, 92 is my birthday year, so
+you can interact with me if you want. And my mail is
+
+319
+00:44:45,969 --> 00:44:51,796
+donghee.na@python.org. I will put everything in the
+description so people can contact you.
+
+320
+00:44:51,836 --> 00:44:57,163
+You can just send me an email and I will
+happily reply if you have any interest about
+
+321
+00:44:57,303 --> 00:45:05,691
+contributing to CPython. I know one thing I want to say to
+Nikita, you are also an awesome core
+
+322
+00:45:05,712 --> 00:45:12,579
+dev who interact with the external contributors. So,
+like, I want to say also thank you to all your
+
+323
+00:45:12,98 --> 00:45:19,568
+activity, and CPython work. Yeah. I very respect
+your activities, including the triaging
+
+324
+00:45:19,688 --> 00:45:26,496
+issues, fixing everything. Yeah. I very respect
+your activitis too. Yeah, thank you. Thank you.
+
+325
+00:45:26,656 --> 00:45:33,163
+Thank you. Bye bye. And that's all for now. I hope it was
+interesting, because during the interview it was
+
+326
+00:45:33,243 --> 00:45:39,52
+really very interesting for me personally. I learned a lot of new
+things, I talked to an amazing smart person, and it's
+
+327
+00:45:39,54 --> 00:45:47,065
+always very nice. And I hope that now you also know that
+you can manage such a programming language as Python.
+
+328
+00:45:47,426 --> 00:45:53,357
+This is a realistic goal for engineers who are
+interested in this. And I hope that maybe at least one
+
+329
+00:45:53,377 --> 00:45:58,867
+of you I was able to motivate to develop your skills in this
+direction. I will be happy to help in any way if someone
+
+330
+00:45:58,887 --> 00:46:05,398
+wants to. And I have three wonderful links, as usual.
+The first link is my GitHub. You can support my work
+
+331
+00:46:05,418 --> 00:46:11,688
+there by putting some stars, some forks. You can
+support my work on Boosty if you want to support with
+
+332
+00:46:11,868 --> 00:46:18,679
+rubles, it's always nice. I do not offer any unique
+content, I believe that all content should be free and
+
+333
+00:46:19,02 --> 00:46:24,348
+open to everyone, so this is just additional
+motivation for me. And, of course, my Telegram
+
+334
+00:46:24,368 --> 00:46:32,344
+channel. My Telegram channel is a place where a lot of
+technical stuff about Python is written. So if you
+
+335
+00:46:32,364 --> 00:46:38,116
+like this kind of content, join us. For example,
+recently I wrote a series of two posts about how GIL
+
+336
+00:46:38,197 --> 00:46:44,569
+works in Python. And, of course, I showed the code in
+C, which physically shows different Python's guts
+
+337
+00:46:44,589 --> 00:46:50,798
+and operating system in order to show how the GIL
+switching actually happens. So if you are interested
+
+338
+00:46:50,818 --> 00:46:56,627
+in text content about Python's guts, feel free to join.
+Well, if you want to see someone specific as a
+
+339
+00:46:56,647 --> 00:47:01,514
+guest, you can write in the comments who you would like
+to see, and I will try to invite this person and talk to
+
+340
+00:47:01,534 --> 00:47:05,5
+them about what they do. That's all from me, thank you
+very much, bye.
