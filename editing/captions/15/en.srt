@@ -1,0 +1,3378 @@
+1
+00:00:00,031 --> 00:00:04,819
+Hello, my name is Nikita Sobolev. I'm a
+CPython core developer working on typing
+
+2
+00:00:05,26 --> 00:00:10,388
+and several other parts of CPython. And
+here with me is Eric Snow. Eric, can you
+
+3
+00:00:10,428 --> 00:00:14,875
+please introduce yourself? Yeah, Eric
+Snow. I've been a Python core developer
+
+4
+00:00:15,817 --> 00:00:21,726
+since 2012 and participated in Python
+core development to an extent before
+
+5
+00:00:21,786 --> 00:00:27,688
+that, of course. And I've worked on a
+variety of different projects. I've been
+
+6
+00:00:27,748 --> 00:00:33,953
+working in software since 2006. I really
+enjoy it. Lots of really interesting
+
+7
+00:00:34,013 --> 00:00:38,957
+problems to solve working on Python.
+Likewise, I've learned a lot from
+
+8
+00:00:39,678 --> 00:00:46,203
+contributing to Python. And also I've
+been able to help improve a number of
+
+9
+00:00:46,323 --> 00:00:52,268
+different parts of Python, including the
+import system and especially a lot of the
+
+10
+00:00:52,308 --> 00:00:57,81
+fundamental operation of the runtime,
+keeping track of all the different data
+
+11
+00:00:57,85 --> 00:01:04,778
+that the Python runtime uses. So I started
+a project, and I'm sure we'll talk about
+
+12
+00:01:04,798 --> 00:01:12,128
+this more, but I started a project roughly
+a decade ago to try and improve Python's
+
+13
+00:01:12,388 --> 00:01:19,657
+support for multi-core parallelism. And
+so that's been a lot of progress in that 10
+
+14
+00:01:19,697 --> 00:01:25,09
+years. I think that we're here mainly to
+discuss your awesome project called
+
+15
+00:01:25,17 --> 00:01:31,476
+Subinterpreters. And I think that this is
+the answer for your multi-course
+
+16
+00:01:31,896 --> 00:01:37,782
+parallelism task. Can you please explain
+to the audience what it is and how they can
+
+17
+00:01:37,922 --> 00:01:47,13
+use it for their benefit? You bet. Let's
+see. In any program, you're going to have
+
+18
+00:01:47,23 --> 00:01:55,229
+the set of data that your program is using.
+And that set of data, you can kind of think
+
+19
+00:01:55,289 --> 00:02:04,171
+of it as just a chunk of memory with the data
+kind of stuck in different spots. Well,
+
+20
+00:02:04,331 --> 00:02:10,037
+the Python runtime is no different. So the
+Python runtime has a bunch of different
+
+21
+00:02:10,237 --> 00:02:16,628
+pieces of data, a lot of it Python objects,
+that it uses when it's running, whether
+
+22
+00:02:17,35 --> 00:02:23,019
+it's the bytecode interpreter running
+some Python code or the CAPI reaching in
+
+23
+00:02:23,099 --> 00:02:30,372
+and doing some work. But it's always
+operating on some part of this runtime
+
+24
+00:02:30,452 --> 00:02:39,664
+state. So what's interesting is that
+Python has, and CPython has had this
+
+25
+00:02:40,125 --> 00:02:47,038
+concept of an interpreter, which is kind
+of this, a set of runtime state that we're
+
+26
+00:02:47,178 --> 00:02:54,087
+using to run Python. And then each thread
+has its own chunk of state. And then each
+
+27
+00:02:54,147 --> 00:02:58,012
+thread also shares what's in this
+interpreter. So you have kind of this
+
+28
+00:02:58,052 --> 00:03:03,739
+hierarchy, all the threads, and then the
+interpreter on top. Well, Python,
+
+29
+00:03:04,34 --> 00:03:10,086
+CPython also supports having multiple
+interpreters in a process. And it's
+
+30
+00:03:10,127 --> 00:03:17,388
+actually been the case for 25 years or so.
+But it's not really a feature that people
+
+31
+00:03:17,408 --> 00:03:21,093
+have made use of. It wasn't exposed to
+Python code, so it was strictly in the C
+
+32
+00:03:21,113 --> 00:03:26,741
+API. Not a lot of people knew about it, so
+not a lot of people used it. And that's
+
+33
+00:03:26,841 --> 00:03:32,209
+changed recently, partly with the work
+that I've been doing. The idea is if you
+
+34
+00:03:32,249 --> 00:03:37,836
+have multiple of these interpreters and
+they're strictly isolated, the data in
+
+35
+00:03:38,057 --> 00:03:41,982
+one and the data in the other, well, when
+you're running with one interpreter in
+
+36
+00:03:42,042 --> 00:03:51,967
+some thread, that that running doesn't
+affect the other interpreters. And if you
+
+37
+00:03:52,027 --> 00:03:57,876
+have that level of isolation, then in
+fact, you even have each interpreter has
+
+38
+00:03:57,956 --> 00:04:02,603
+its own gill. And if each interpreter has
+its own gill, then suddenly with that
+
+39
+00:04:02,723 --> 00:04:08,191
+isolation, you can run in multiple
+threads, different interpreters, and
+
+40
+00:04:08,211 --> 00:04:14,903
+they will have That isolation means that
+you can really use true multi-core
+
+41
+00:04:14,923 --> 00:04:21,671
+parallelism when you're running a
+program in multiple interpreters. So
+
+42
+00:04:21,732 --> 00:04:30,643
+basically we have an OS-based thread, and
+this thread runs a C API that runs Python
+
+43
+00:04:30,683 --> 00:04:37,103
+interpreter. Is that right? Yeah, more or
+less really what happens it's it's easy to
+
+44
+00:04:37,183 --> 00:04:43,54
+think, oh, I'm going to run multiple
+interpreters and that's what what I get.
+
+45
+00:04:43,58 --> 00:04:49,138
+But really, you're not running an
+interpreter. you're running in a thread
+
+46
+00:04:49,178 --> 00:04:53,945
+using an interpreter. So kind of the
+interpreter is the data essentially. I
+
+47
+00:04:53,965 --> 00:04:57,17
+mean, you can think of it conceptually as
+something you run, but really the
+
+48
+00:04:57,21 --> 00:05:01,256
+interpreter is the data and you're
+running relative to this data, you're
+
+49
+00:05:01,296 --> 00:05:09,247
+switching to another interpreter and
+running your whatever, if it's C or even if
+
+50
+00:05:09,327 --> 00:05:15,867
+it's Python, you're running relative to
+this interpreter. So the key is that Um,
+
+51
+00:05:16,107 --> 00:05:20,979
+you don't say run in this interpreter, you
+say switch over to this interpreter and
+
+52
+00:05:20,999 --> 00:05:25,609
+then run and then run whatever code I want.
+And when it runs, it's going to run
+
+53
+00:05:25,67 --> 00:05:29,719
+relative to that interpreter. But
+essentially it's like what you're
+
+54
+00:05:29,739 --> 00:05:34,53
+saying, just that you're running in a
+thread using a different interpreter.
+
+55
+00:05:36,383 --> 00:05:45,444
+And each of them has its own GIL. And this
+allows us to run both CPU-based tasks and
+
+56
+00:05:45,484 --> 00:05:54,0
+IO-based tasks. Is that right? Yep. And of
+course, you said a very important thing
+
+57
+00:05:54,181 --> 00:05:59,849
+that a lot of people don't know, that this
+feature existed since Python 1.5, I
+
+58
+00:05:59,909 --> 00:06:06,098
+guess. Yeah, roughly. What was the
+initial motivation for that? What was the
+
+59
+00:06:06,238 --> 00:06:10,724
+starting point? When you think about a
+program having global variables, global
+
+60
+00:06:10,744 --> 00:06:17,814
+variables tend to be a little tricky. For a
+large program, global variables can be a
+
+61
+00:06:17,874 --> 00:06:23,436
+problem. it's a little harder to manage
+those global variables when they're
+
+62
+00:06:23,456 --> 00:06:29,747
+shared between functions. One function
+can affect global state and so forth. So
+
+63
+00:06:29,787 --> 00:06:37,46
+kind of best engineering practices tend
+to encourage us to avoid global variables
+
+64
+00:06:38,281 --> 00:06:43,33
+and run relative to kind of some
+particular state that's well
+
+65
+00:06:43,39 --> 00:06:49,846
+encapsulated. So that's part of what
+happened back then, is there was this push
+
+66
+00:06:49,886 --> 00:06:54,054
+to take all these global variables that
+built up, especially when they were
+
+67
+00:06:54,094 --> 00:07:00,465
+working on better support for
+multi-threading. So they took this
+
+68
+00:07:01,287 --> 00:07:05,294
+thread state, they created this thread
+state struct and encapsulated all the
+
+69
+00:07:05,334 --> 00:07:10,954
+data that threads needed. And then there
+was an interpreter state struct. At the
+
+70
+00:07:11,014 --> 00:07:14,298
+same time, it made sense, add an
+interpreter state struct. I think there
+
+71
+00:07:14,318 --> 00:07:21,586
+was also some inspiration from other
+runtimes, like TCL, I think, had this
+
+72
+00:07:21,647 --> 00:07:27,313
+concept of subinterpreters that was
+partly an inspiration. So there was that
+
+73
+00:07:27,874 --> 00:07:31,638
+encapsulating that data. Now, not all
+global variables were removed, but a lot
+
+74
+00:07:31,658 --> 00:07:36,075
+of stuff was moved into this interpreter
+state. And that's kind of where it
+
+75
+00:07:36,115 --> 00:07:39,619
+started. Now over time, of course, there
+are more and more global variables added
+
+76
+00:07:39,659 --> 00:07:48,288
+back in. And so we kind of lost track of that
+idea of encapsulation, partly because
+
+77
+00:07:48,328 --> 00:07:55,395
+there wasn't a lot of awareness among core
+developers of having multiple
+
+78
+00:07:55,415 --> 00:08:03,178
+interpreters in this interpreter state.
+So that's kind of where it all started. So
+
+79
+00:08:03,939 --> 00:08:09,007
+how many interpreters can you
+realistically run on an average MacBook
+
+80
+00:08:09,067 --> 00:08:13,354
+or something like that? Do you have any
+performance numbers? Yeah, I think a
+
+81
+00:08:13,475 --> 00:08:19,384
+couple of years ago, I just ran a quick
+little thing to see how many interpreters
+
+82
+00:08:19,444 --> 00:08:25,068
+I could have running at once before I ran
+out of memory. And I think at the time, I
+
+83
+00:08:25,088 --> 00:08:29,652
+don't remember exactly. Maybe it was 80.
+That seems low, but maybe it was 80,
+
+84
+00:08:29,793 --> 00:08:35,078
+something like that. It's probably a bit
+more than that, but not a ton more. Just
+
+85
+00:08:35,138 --> 00:08:40,643
+because each interpreter has a lot of
+memory involved. It has all the modules
+
+86
+00:08:40,703 --> 00:08:45,988
+that you import. It has a variety of other
+runtime state, lots of objects. So it's
+
+87
+00:08:46,028 --> 00:08:50,492
+going to take a fair amount of memory. I
+don't remember exactly how much it was. It
+
+88
+00:08:50,532 --> 00:08:58,503
+was like the initialized loaded
+Interpreter was like two megabytes of RAM
+
+89
+00:08:58,663 --> 00:09:01,789
+or something like that. I don't remember
+exactly, but something along those
+
+90
+00:09:01,849 --> 00:09:08,964
+lines. But at the point I'm at now, one of
+the key things I'm looking into is how to
+
+91
+00:09:09,004 --> 00:09:14,916
+reduce the amount of memory used by each
+interpreter, as well as how to make
+
+92
+00:09:14,956 --> 00:09:22,001
+interpreters start up faster. Mm-hmm. I
+think that we've reached the point where
+
+93
+00:09:22,061 --> 00:09:26,966
+we need to discuss the milestones of the
+project, because I remember that the
+
+94
+00:09:27,046 --> 00:09:32,392
+first time we discussed subinterpreters
+widely in the Python community was around
+
+95
+00:09:32,452 --> 00:09:40,2
+Python 3.10. And after that, we had a lot of
+great stuff coming into this feature,
+
+96
+00:09:40,581 --> 00:09:44,485
+like Perinterpreter Guild and stuff like
+that. Can you please share all the
+
+97
+00:09:44,625 --> 00:09:48,352
+important milestones for the project?
+I'll tell you a little of the history here.
+
+98
+00:09:48,413 --> 00:09:54,109
+I think that'll get us what we want. Back in
+2014, I had been working on a variety of
+
+99
+00:09:54,149 --> 00:09:58,962
+things, and as a core developer and as a
+member of the Python community, just
+
+100
+00:10:04,628 --> 00:10:09,754
+community needs. As a core developer,
+we're not really told what we should be
+
+101
+00:10:09,814 --> 00:10:15,421
+working on. Most everybody is a
+volunteer. And so everyone just kind of
+
+102
+00:10:15,441 --> 00:10:20,267
+works on whatever they're going to work
+on. Sometimes their employer has a need
+
+103
+00:10:20,427 --> 00:10:25,272
+and they work on that. But often people
+just work on things that interest them or
+
+104
+00:10:25,312 --> 00:10:32,055
+they work on things that they think that
+the Python community needs done. So this
+
+105
+00:10:32,095 --> 00:10:40,654
+was a case where 2014 I was talking to
+somebody who I really respected their
+
+106
+00:10:41,536 --> 00:10:47,496
+kind of their thoughts about technology
+and and their perspective there. And they
+
+107
+00:10:47,556 --> 00:10:52,603
+pointed out that they thought that Python
+was a dead language, which really
+
+108
+00:10:52,643 --> 00:10:57,949
+surprised me. And I asked why, and they
+said, well, it's because Python doesn't
+
+109
+00:10:58,43 --> 00:11:05,758
+have good support for multi-core
+parallelism because of the GIL. And
+
+110
+00:11:07,12 --> 00:11:11,926
+that's a pretty common thinking about it.
+And there's definitely some
+
+111
+00:11:11,986 --> 00:11:17,684
+limitations. There are trade-offs. the
+GIL provides a lot of benefits as well. So,
+
+112
+00:11:18,966 --> 00:11:23,292
+we talked about it a little bit, but from
+then it really, it struck me that somebody
+
+113
+00:11:23,352 --> 00:11:28,42
+who I thought was so well informed and had
+really a good perspective about stuff,
+
+114
+00:11:29,181 --> 00:11:36,813
+that they were, just had the wrong ideas
+here. And it, I decided we really had to do
+
+115
+00:11:36,913 --> 00:11:44,143
+something about improving Python's
+multi-core story. So I spent, and this is
+
+116
+00:11:44,183 --> 00:11:48,87
+all my spare time, I spent like the next
+year looking at what all the options are,
+
+117
+00:11:49,331 --> 00:11:53,958
+looking at the problem, looking at what we
+could do about it, whether it's just
+
+118
+00:11:54,019 --> 00:11:57,805
+communicating better about it, which
+hadn't worked historically, whether
+
+119
+00:11:58,105 --> 00:12:04,716
+it's finding some possible solution
+that's used in other languages. One
+
+120
+00:12:04,736 --> 00:12:11,995
+obvious choice is get rid of the GIL. But
+one thing I bumped into was the idea of
+
+121
+00:12:13,036 --> 00:12:19,085
+taking multiple interpreters and taking
+this idea of isolation, actually
+
+122
+00:12:19,125 --> 00:12:23,051
+following it through. Because there were
+lots of things in the CPython
+
+123
+00:12:23,071 --> 00:12:29,68
+implementation where that isolation was
+violated between interpreters. And
+
+124
+00:12:29,741 --> 00:12:36,268
+that's essentially why they weren't
+quite as usable. And so I looked at the
+
+125
+00:12:36,308 --> 00:12:40,536
+possibilities, narrowed things down,
+and looked at, you know, like, was it
+
+126
+00:12:40,576 --> 00:12:44,383
+something that I could do? What steps
+would be involved? What technical
+
+127
+00:12:44,443 --> 00:12:49,112
+challenges would have to be solved? You
+know, how much of it was, like, within my
+
+128
+00:12:51,737 --> 00:12:58,96
+knowledge level? And all of that, and with
+all those factors considered, I ended up
+
+129
+00:12:59,761 --> 00:13:07,812
+realizing that the only possible
+solution for me was trying to fix multiple
+
+130
+00:13:07,832 --> 00:13:13,64
+interpreters and get a per-interpreter
+GIL. So I figured out all the different
+
+131
+00:13:13,7 --> 00:13:18,306
+granular steps that have to be taken, and
+it ended up there were 4,000 or 5,000
+
+132
+00:13:18,346 --> 00:13:27,846
+global variables that had to get sorted
+out. And so I started there, created this
+
+133
+00:13:28,788 --> 00:13:35,558
+runtime state struct that's kind of above
+interpreter state struct and started
+
+134
+00:13:35,798 --> 00:13:41,567
+pulling all these global variables into
+it. I created tooling to... That's why we
+
+135
+00:13:41,607 --> 00:13:48,737
+have C analyzer. Yeah. So I created that C
+analyzer. so that we could make sure that
+
+136
+00:13:48,757 --> 00:13:52,602
+we don't add more global variables. And
+that's, I think, worked out pretty well.
+
+137
+00:13:53,744 --> 00:13:59,452
+And a lot of the work was just taking global
+variables, moving them into the runtime
+
+138
+00:13:59,492 --> 00:14:06,141
+state, and then moving as many of those
+down into the interpreter state. Until
+
+139
+00:14:06,221 --> 00:14:12,089
+finally, we got to the point where all that
+was left to move was move the GIL down from
+
+140
+00:14:12,129 --> 00:14:17,765
+this runtime state down into the
+interpreter state. So what's
+
+141
+00:14:17,825 --> 00:14:24,872
+interesting is I started discussions
+about all of this back in 2015. So that was
+
+142
+00:14:25,073 --> 00:14:34,217
+leading up to 3.5. And I started talking
+about adding. So the one part is isolating
+
+143
+00:14:34,258 --> 00:14:39,322
+interpreters. The other part is exposing
+multiple interpreters to Python code
+
+144
+00:14:39,362 --> 00:14:44,767
+through a standard library module. And I
+actually opened up threads on that back in
+
+145
+00:14:44,787 --> 00:14:52,033
+2017 or maybe even earlier. I'd have to
+look it up. But 2017, back in the time
+
+146
+00:14:52,073 --> 00:14:59,846
+period of 3.7, 3.6, right around there. So
+there were lots of discussions back then.
+
+147
+00:14:59,966 --> 00:15:06,721
+I think I created PEP 554, which was the
+original PEP for the standard library
+
+148
+00:15:06,781 --> 00:15:17,808
+module. That was in 2018. And so we started
+discussions about that back then. So it's
+
+149
+00:15:17,848 --> 00:15:23,655
+been going on for a while. And, and again,
+pretty much all of it in my spare time, like
+
+150
+00:15:23,736 --> 00:15:30,505
+most contributions to Python. So it got to
+the point for where, uh, two years ago for
+
+151
+00:15:30,625 --> 00:15:35,491
+Python 3.12, got to the Perinterpreter
+Guild, ended up having to create a couple
+
+152
+00:15:35,552 --> 00:15:41,9
+more peps for that, including PEP 684,
+which is about the Perinterpreter Guild.
+
+153
+00:15:42,922 --> 00:15:51,701
+And that was accepted. and the change
+landed for Python 3.12. I tried to get the
+
+154
+00:15:52,222 --> 00:15:57,809
+pep for the standard library module in for
+3.12 as well, but that didn't work out. It
+
+155
+00:15:57,889 --> 00:16:01,433
+didn't make it for 3.13 for other reasons,
+and we could talk about that, of course,
+
+156
+00:16:02,114 --> 00:16:11,326
+but it was accepted for 3.14, and kind of
+snuck in at the last minute, and we got all
+
+157
+00:16:11,386 --> 00:16:17,702
+that merged, so now we have it. It's
+concurrent.interpreters. That's the
+
+158
+00:16:17,722 --> 00:16:22,03
+string council wanted to put it there. I
+was going to just make it interpreters
+
+159
+00:16:22,07 --> 00:16:28,741
+module. So you can find it in
+concurrent.interpreters. And now, so
+
+160
+00:16:28,902 --> 00:16:34,551
+like I said, at this point, that's kind of
+the foundation for a lot of stuff that we
+
+161
+00:16:34,572 --> 00:16:40,122
+can do. Once you get to this point, now
+there's a ton of things that we can do on top
+
+162
+00:16:40,183 --> 00:16:45,307
+of that, that are interesting. A lot of
+this work that I've been doing has been
+
+163
+00:16:45,327 --> 00:16:50,232
+kind of the boring parts, but I wanted to
+get us to the point where we have this
+
+164
+00:16:50,272 --> 00:16:53,735
+foundation and now people can start
+tackling lots of interesting problems,
+
+165
+00:16:53,835 --> 00:17:01,061
+like how to use subinterpreters, how to
+use them effectively, or like I said, the
+
+166
+00:17:01,121 --> 00:17:07,247
+effort to make them faster and make
+communication between them easier and
+
+167
+00:17:07,267 --> 00:17:12,279
+more efficient. how to make them start
+faster and use less memory and those
+
+168
+00:17:12,359 --> 00:17:17,607
+things. But there's a variety of
+interesting problems to be solved, which
+
+169
+00:17:18,288 --> 00:17:26,64
+are now kind of open to the world to explore
+as of 3.14. You also mentioned that we
+
+170
+00:17:26,72 --> 00:17:32,389
+removed a lot of global variables from the
+CPython. And I think one of the main
+
+171
+00:17:33,23 --> 00:17:38,382
+techniques to remove these global
+variables were isolating modules. Can
+
+172
+00:17:38,403 --> 00:17:43,528
+you please talk a little bit more about
+that? So that's one of the things to sort
+
+173
+00:17:43,688 --> 00:17:50,536
+out right now is that extension modules
+don't work with isolated interpreters by
+
+174
+00:17:50,616 --> 00:17:55,581
+default right now. You can't import them.
+If you try and import a module that doesn't
+
+175
+00:17:55,641 --> 00:18:05,152
+explicitly opt-in, then the import will
+fail. We did that because the alternative
+
+176
+00:18:05,192 --> 00:18:15,053
+is is basically the same problems you have
+with any multi-threaded experience. But
+
+177
+00:18:15,233 --> 00:18:18,576
+you end up, it's especially problematic
+if you're sharing objects between
+
+178
+00:18:18,636 --> 00:18:27,364
+interpreters. So what it means is that an
+extension module has to be isolated, like
+
+179
+00:18:27,404 --> 00:18:36,18
+you're saying. And that means three
+things. One, it has to be modified to use
+
+180
+00:18:36,261 --> 00:18:41,026
+multi-phase init. That's the PEP 389
+implementation. We have a how-to
+
+181
+00:18:41,086 --> 00:18:50,037
+document that talks about this. But PEP
+389 or multi-phase init basically means
+
+182
+00:18:50,177 --> 00:18:56,945
+rather than an extension module having an
+init function, instead it has an exec
+
+183
+00:18:56,985 --> 00:19:03,43
+function. And so then the import system,
+it kind of mirrors what happened with PEP
+
+184
+00:19:04,171 --> 00:19:11,103
+451, which is the module state. That was
+something I worked on. And it, it applies
+
+185
+00:19:11,143 --> 00:19:18,703
+that idea where you have You have
+execution of a module is different than
+
+186
+00:19:18,783 --> 00:19:22,949
+initialization. Initialization
+includes creating the module object,
+
+187
+00:19:23,47 --> 00:19:29,438
+includes setting some stuff up, includes
+adding it to sys.modules and a variety of
+
+188
+00:19:29,478 --> 00:19:37,605
+other things that the import system can do
+for you. But prior to PEP 451 and 489, the
+
+189
+00:19:38,406 --> 00:19:47,495
+modules had to do this, or loaders, if you
+will, had to do this explicitly, whereas
+
+190
+00:19:47,515 --> 00:19:54,483
+those two PEPs made it so that loaders,
+they only had to execute the module and the
+
+191
+00:19:54,503 --> 00:20:01,089
+import system could take care of the rest.
+So PEP 489 provides that, it gives you the
+
+192
+00:20:01,129 --> 00:20:09,287
+module and it doesn't give you the module.
+What it gives you is the init function.
+
+193
+00:20:09,648 --> 00:20:14,042
+Rather than doing all the initialization
+for the module, all it does is sets up
+
+194
+00:20:14,363 --> 00:20:20,431
+essentially a spec. So now the init
+function returns this spec. that then the
+
+195
+00:20:20,511 --> 00:20:25,299
+import system can use. It can take this
+spec and part of the spec is that it has a
+
+196
+00:20:25,319 --> 00:20:31,768
+bunch of slots. And so there's a bunch of
+predefined slots. One of them is exec. So
+
+197
+00:20:31,849 --> 00:20:38,038
+it'll call, it'll look for this exec slot.
+It'll get the value of it. And that value is
+
+198
+00:20:38,198 --> 00:20:42,665
+a function and it'll execute that
+function. And that function is passed in
+
+199
+00:20:42,685 --> 00:20:48,382
+the module and it does all the stuff. that
+the init function of extension modules
+
+200
+00:20:48,482 --> 00:20:55,19
+used to be. So switching from the old
+single-phase init with the init function
+
+201
+00:20:55,25 --> 00:21:01,077
+doing all the work to multi-phase init,
+where you have the exec function and then
+
+202
+00:21:01,117 --> 00:21:07,705
+you have the module def, that switch is
+pretty easy. It's a matter of adding a few
+
+203
+00:21:07,766 --> 00:21:13,222
+extra lines of code pretty
+straightforward. And as a benefit, you
+
+204
+00:21:13,242 --> 00:21:20,256
+get a variety of support there for things
+like reloading modules or other things
+
+205
+00:21:20,316 --> 00:21:25,273
+that extension modules couldn't do
+before. So isolated modules, the first
+
+206
+00:21:25,333 --> 00:21:30,38
+step is this multi-faceted net, which
+everyone should do anyway. And then
+
+207
+00:21:30,42 --> 00:21:36,047
+there's two other pieces. One is just
+start using module state, which has been a
+
+208
+00:21:36,107 --> 00:21:42,335
+part of Python since back in like Python
+3.4, 3.3, something like that. It's been
+
+209
+00:21:42,375 --> 00:21:51,303
+around a while. So module state is
+basically when the module's created, you
+
+210
+00:21:51,323 --> 00:21:55,228
+get a segment of memory, and then the
+module will operate relative to that
+
+211
+00:21:55,308 --> 00:21:59,354
+memory rather than operating relative to
+global variables. So it's kind of the same
+
+212
+00:21:59,394 --> 00:22:03,919
+thing that we had to do with Python
+generally with the runtime. Take these
+
+213
+00:22:03,959 --> 00:22:08,665
+global variables, move them into a
+struct, and then operate relative to
+
+214
+00:22:08,726 --> 00:22:13,652
+that. Every module has access to its own
+state. But what's interesting is that
+
+215
+00:22:13,672 --> 00:22:20,441
+every module object has relative to its
+own module state. Even in the same
+
+216
+00:22:20,461 --> 00:22:26,572
+interpreter, you can have multiple
+copies of the same module, and each one
+
+217
+00:22:26,612 --> 00:22:31,701
+will have its own module state, which is
+kind of neat. But that supports a number of
+
+218
+00:22:31,761 --> 00:22:37,831
+benefits. And then as part of that,
+Python's CAPI has historically
+
+219
+00:22:37,992 --> 00:22:44,85
+supported people creating static types.
+And static types are objects, but they're
+
+220
+00:22:44,97 --> 00:22:54,13
+statically allocated and statically
+referenced objects, which means that
+
+221
+00:22:54,211 --> 00:22:58,941
+they're necessarily shared between all
+interpreters. And the problem is that
+
+222
+00:22:59,444 --> 00:23:03,692
+type objects, even static types, they
+contain other objects, and they're
+
+223
+00:23:03,772 --> 00:23:09,564
+mutable. So, like, you have Dunder
+subclasses, for instance, or weak
+
+224
+00:23:09,604 --> 00:23:14,533
+references are stored on the type object.
+Every type object has a Dunder dict, which
+
+225
+00:23:14,874 --> 00:23:20,624
+you can actually modify at runtime. So,
+You can't have those objects leaking
+
+226
+00:23:20,684 --> 00:23:26,273
+between interpreters, which means you
+kind of have to jump through some hoops to
+
+227
+00:23:26,333 --> 00:23:31,3
+make that work. The alternative, the
+recommended solution for extension
+
+228
+00:23:31,34 --> 00:23:37,089
+modules, and this is the third piece, is to
+switch from using static types to heap
+
+229
+00:23:37,149 --> 00:23:44,648
+types. That is probably the most painful
+part, especially for really large
+
+230
+00:23:44,748 --> 00:23:50,339
+extension modules. It isn't necessarily
+very painful, but it's work. It's
+
+231
+00:23:50,98 --> 00:23:57,031
+non-trivial. It isn't just add a couple
+lines here and whatever. You got to make a
+
+232
+00:23:57,292 --> 00:24:02,9
+bunch of little changes. So it's not a
+great experience. horrible, but it's a
+
+233
+00:24:02,96 --> 00:24:07,549
+lot for really big extension modules.
+It's also something that, I don't know,
+
+234
+00:24:07,85 --> 00:24:11,958
+it's just, that's something that we want
+to make better. What's interesting is
+
+235
+00:24:12,018 --> 00:24:18,451
+that for the Python runtime, there are a
+bunch of built-in types. So that was one of
+
+236
+00:24:18,491 --> 00:24:23,298
+the tricky things. There are probably
+maybe three or four different actual
+
+237
+00:24:23,318 --> 00:24:30,176
+tricky things that I had to solve when
+isolating the interpreters. And one of
+
+238
+00:24:30,237 --> 00:24:38,138
+them was this, was the built-in types.
+Because we expose a number of objects in
+
+239
+00:24:38,198 --> 00:24:46,682
+the C API, shared by all code in that
+process, including multiple
+
+240
+00:24:46,702 --> 00:24:53,072
+interpreters. So we had to make a way to
+share all the objects exposed by this API
+
+241
+00:24:53,853 --> 00:25:00,383
+work in that situation and not leak data
+between interpreters. For the very
+
+242
+00:25:00,483 --> 00:25:06,993
+singletons like none or whatever, that
+wasn't so much a problem. We actually
+
+243
+00:25:07,073 --> 00:25:11,78
+solved that with a an extra piece called
+immortal objects, which is kind of an
+
+244
+00:25:11,86 --> 00:25:15,946
+implementation detail. We haven't
+exposed that publicly. Maybe we will
+
+245
+00:25:15,966 --> 00:25:22,195
+someday, but I'm not sure we will. But that
+was a part of the puzzle. So we solved that.
+
+246
+00:25:22,375 --> 00:25:25,66
+Can you please explain what immortal
+means in this context? Yeah, yeah, we'll
+
+247
+00:25:25,7 --> 00:25:33,752
+understand. So in CPython, objects have a
+ref count. And that's kind of a problem for
+
+248
+00:25:34,407 --> 00:25:40,354
+for a variety of reasons, because that ref
+count is part of the public C API. But it's
+
+249
+00:25:40,414 --> 00:25:44,66
+also just in Python code. Likewise,
+there's a ref count. It's all invisible to
+
+250
+00:25:44,76 --> 00:25:50,287
+users for the most part. So an immortal
+object is one which will never get
+
+251
+00:25:50,387 --> 00:25:57,035
+deallocated. It'll never get cleaned up.
+And the implementation detail there is
+
+252
+00:25:57,115 --> 00:26:03,907
+that we just set the ref count to a really
+high number. And so if you ever find an
+
+253
+00:26:03,927 --> 00:26:10,957
+object, like if you try to, the tools that
+we have, I don't remember exactly what we
+
+254
+00:26:10,997 --> 00:26:15,524
+have a- Sys.getRefCount or something
+like that. Sys.getRefCount, yeah. So if
+
+255
+00:26:15,564 --> 00:26:21,192
+you call that, you'll find that for some
+objects, the ref count is absurdly high,
+
+256
+00:26:21,632 --> 00:26:26,359
+you know, billions, right? And it's much
+higher than your program would have
+
+257
+00:26:26,419 --> 00:26:33,873
+actually reached. And that's because
+that object is, So, but that's an
+
+258
+00:26:33,933 --> 00:26:37,301
+implementation detail, we could
+potentially do it other ways, but it's
+
+259
+00:26:37,361 --> 00:26:43,236
+pretty efficient to do it that way. So,
+with immortal objects, they never die,
+
+260
+00:26:43,436 --> 00:26:48,973
+which means that we don't have to worry
+about the objects getting cleaned up
+
+261
+00:26:49,835 --> 00:26:55,063
+across interpreters and all sorts of
+crazy stuff. For static objects, I mean,
+
+262
+00:26:55,083 --> 00:26:59,83
+it just makes sense that they're immortal
+objects anyway. But another benefit is
+
+263
+00:26:59,93 --> 00:27:08,348
+that for objects where the only actual bit
+of mutable state is the ref count, then And
+
+264
+00:27:08,69 --> 00:27:13,09
+now, in mortal objects, we set the value to
+a really high number, and then we never
+
+265
+00:27:13,17 --> 00:27:18,661
+change it. So it stays there. That means
+that there's no more data races. for
+
+266
+00:27:19,181 --> 00:27:25,051
+objects between interpreters, if that
+object's getting shared like none, or one
+
+267
+00:27:25,111 --> 00:27:29,318
+of the static types, the built-in types,
+then we don't have to worry about that ref
+
+268
+00:27:29,358 --> 00:27:33,565
+count changing, and then we don't end up
+with any weird situations like where ref
+
+269
+00:27:33,605 --> 00:27:37,331
+count reaches zero because of race
+conditions, and we weren't expecting
+
+270
+00:27:37,371 --> 00:27:43,551
+that, or it overflows, or anything weird
+like that. So because of that, immortal
+
+271
+00:27:43,691 --> 00:27:51,481
+objects are really important for
+facilitating using objects, sharing
+
+272
+00:27:51,601 --> 00:27:57,008
+objects between interpreters safely
+when those objects, the only mutable,
+
+273
+00:27:57,308 --> 00:28:05,765
+actual mutable data is the ref count. So
+like integers, you know, the int type,
+
+274
+00:28:05,986 --> 00:28:11,094
+well, for small integers, we actually, a
+bunch of those small integers like one and
+
+275
+00:28:11,334 --> 00:28:19,888
+10 and minus one are all static,
+statically defined in CPython. So they
+
+276
+00:28:19,908 --> 00:28:23,174
+aren't dynamically allocated. They
+don't belong to any interpreter. They
+
+277
+00:28:23,194 --> 00:28:28,222
+belong to all interpreters. They're
+immutable. And none of their data changes
+
+278
+00:28:28,262 --> 00:28:32,884
+except for the ref count, except because
+they're immortal. Now, even the ref count
+
+279
+00:28:32,924 --> 00:28:37,675
+doesn't change, and we don't have
+problems. We don't have any data races
+
+280
+00:28:37,735 --> 00:28:44,384
+there. We don't have problems with
+thrashing on data and cache misses and
+
+281
+00:28:46,047 --> 00:28:49,592
+various other performance related
+stuff. So there's a variety of benefits
+
+282
+00:28:49,672 --> 00:28:53,177
+that we get from immortal objects, but
+there's also certain constraints
+
+283
+00:28:53,918 --> 00:29:00,567
+relative to mutability that we have to
+factor in. That's the whole thing with
+
+284
+00:29:01,108 --> 00:29:08,756
+immortal objects. You can look at PEP 683,
+which is all about immortal objects. But
+
+285
+00:29:08,816 --> 00:29:14,122
+again, it's all internal detail. So
+there's no CAPI related to immortal
+
+286
+00:29:14,222 --> 00:29:19,608
+objects, it's public. So we made use of
+this with static types, which is great
+
+287
+00:29:20,449 --> 00:29:25,154
+because we have a variety of static types
+that are exposed in the CAPI directly. Not
+
+288
+00:29:25,254 --> 00:29:32,386
+pointers to the stack types, but the
+actual like static type itself. And so we
+
+289
+00:29:32,426 --> 00:29:38,475
+did that, but there's still the factor of
+the dunder dict and dunder subclasses and
+
+290
+00:29:38,495 --> 00:29:44,064
+the weak refs. Those things were still
+mutable and shared between troopers. So
+
+291
+00:29:44,124 --> 00:29:50,958
+we had to work out this clever little trick
+where Rather than looking for static
+
+292
+00:29:51,018 --> 00:29:56,629
+types, we don't look in the, so static
+types have a whole bunch of fields. It's a
+
+293
+00:29:56,649 --> 00:30:06,208
+struct with a whole bunch of fields and a
+slot in there, like tp subclasses or tp
+
+294
+00:30:06,268 --> 00:30:13,312
+dict. So rather than, normally for
+objects, and we're looking up something
+
+295
+00:30:13,352 --> 00:30:19,221
+on the type, and we look in tpDict, and it's
+a dictionary, or tpSubclasses, and it's a
+
+296
+00:30:19,281 --> 00:30:25,05
+list. And normally, that's where we
+looked. But for static types, we have a
+
+297
+00:30:25,171 --> 00:30:31,841
+special case where for those objects, we
+actually look on the interpreter state.
+
+298
+00:30:31,921 --> 00:30:45,189
+So we have an array of little structs that
+have subclasses and the dict and the weak
+
+299
+00:30:45,229 --> 00:30:51,897
+refs stored on that little struct. And
+it's an array of them. So there's an index
+
+300
+00:30:52,118 --> 00:30:59,647
+into the array for each of those. And so now
+each static type knows its index. And so
+
+301
+00:30:59,727 --> 00:31:03,391
+when we go to look something up, we say, oh,
+this is a static type. We get the index out
+
+302
+00:31:03,431 --> 00:31:08,638
+of the static type. And then we go into this
+array on the interpreter state and we look
+
+303
+00:31:08,679 --> 00:31:15,349
+it up and we get the entry and then we get the
+value out of the structs stored in that
+
+304
+00:31:15,389 --> 00:31:20,356
+array. That's right. Yeah, it's all
+pretty efficient. And so that way we're
+
+305
+00:31:20,417 --> 00:31:26,526
+able to maintain the isolation for those
+few parts of the static types that are
+
+306
+00:31:27,287 --> 00:31:33,378
+mutable. And so we solved it that way. Now,
+with coming back to extension modules,
+
+307
+00:31:33,698 --> 00:31:37,747
+one thing that we thought about doing is
+applying that same solution to extension
+
+308
+00:31:37,787 --> 00:31:43,278
+modules so that extension modules don't
+have to switch to using heap types. There
+
+309
+00:31:43,298 --> 00:31:46,865
+are some other advantages to using heap
+types, and we encourage everyone to use
+
+310
+00:31:46,905 --> 00:31:52,377
+heap types, but we thought, well, This is
+kind of an obstacle because the other
+
+311
+00:31:52,457 --> 00:31:57,189
+parts of switching or making an extension
+module isolated are really
+
+312
+00:31:57,209 --> 00:32:01,561
+straightforward. Keep types. They're
+fine. They're not a lot of work, but
+
+313
+00:32:01,581 --> 00:32:10,132
+they're enough work that people are kind
+of resistant to doing it, which I get it.
+
+314
+00:32:10,152 --> 00:32:15,297
+And so we thought, well, while there are
+other benefits to using heap types and we
+
+315
+00:32:15,337 --> 00:32:21,583
+want people to switch to that, there are
+cases where it makes sense to stick with
+
+316
+00:32:21,603 --> 00:32:27,71
+static types. So we should be able to
+figure out a way to apply as one possible
+
+317
+00:32:27,75 --> 00:32:33,215
+solution, apply the same solution that we
+use for static types in the runtime, the
+
+318
+00:32:33,255 --> 00:32:40,278
+built-in types, apply that same thing for
+static types and extension modules. We
+
+319
+00:32:40,298 --> 00:32:45,244
+haven't gotten there yet, but that's one
+of the things I'll be looking into. So with
+
+320
+00:32:45,645 --> 00:32:51,913
+that, then it would make it a lot easier for
+people to isolate their modules. There's
+
+321
+00:32:52,013 --> 00:32:57,46
+one other piece that people have to
+consider, is that if an extension module
+
+322
+00:32:58,101 --> 00:33:04,866
+makes use of some library, like a C
+library, for instance, that itself
+
+323
+00:33:05,487 --> 00:33:12,597
+doesn't have isolated state, then the
+extension module is going to have to work
+
+324
+00:33:12,658 --> 00:33:19,007
+around that. Like SSL module, for
+example. Yeah, SSL module, exactly. So
+
+325
+00:33:19,648 --> 00:33:23,613
+that's something that people have to deal
+with. And if I remember right, this
+
+326
+00:33:23,633 --> 00:33:29,827
+actually came up with the cryptography
+library. which is on PyPI and pretty
+
+327
+00:33:29,867 --> 00:33:34,493
+popular. And they ran into this where
+somebody was using cryptography with
+
+328
+00:33:35,194 --> 00:33:39,438
+sub-interpreters back then. This was, I
+don't know, 10 years ago, something. And
+
+329
+00:33:39,458 --> 00:33:45,265
+they actually couldn't figure out what
+was going on, but then they figured out it
+
+330
+00:33:45,305 --> 00:33:52,259
+was this issue of multiple interpreters
+and the SSL module wasn't something about
+
+331
+00:33:52,319 --> 00:33:58,507
+that and OpenSSL. And they weren't able
+to, across interpreters, keep track of
+
+332
+00:33:59,828 --> 00:34:05,696
+swapping out the state and whatever that
+you have to do with OpenSSL. And so they had
+
+333
+00:34:05,736 --> 00:34:10,642
+to work around that. And that's the sort of
+thing that people might have to do. I
+
+334
+00:34:10,682 --> 00:34:15,629
+expect it's really uncommon. That's kind
+of an extra piece, but I expect it's not
+
+335
+00:34:15,669 --> 00:34:22,019
+really going to affect a lot of people. And
+if it does affect them, it would be pretty
+
+336
+00:34:22,119 --> 00:34:28,545
+clear what's going on and what they need to
+do about it. So that's kind of where that's
+
+337
+00:34:28,585 --> 00:34:33,731
+at with extension modules. So I'm hopeful
+at this point, now we have all the pieces in
+
+338
+00:34:33,771 --> 00:34:38,456
+place that we'll be able, and we have a
+motivation for people to switch to
+
+339
+00:34:38,496 --> 00:34:42,56
+multi-phase init and isolated extension
+modules, that we'll see a lot more of that
+
+340
+00:34:42,62 --> 00:34:48,849
+happening out in the community. One
+interesting thing is that a lot of the
+
+341
+00:34:48,869 --> 00:34:53,258
+things that you have to do to support
+multiple interpreters and isolated
+
+342
+00:34:53,298 --> 00:34:59,59
+interpreters is the exact same stuff that
+you're going to have to do to support free
+
+343
+00:34:59,63 --> 00:35:06,983
+threading. So the free threaded build of
+Python you're exposed to all of the same
+
+344
+00:35:07,924 --> 00:35:14,956
+data races and... Probably even more.
+Yeah, even more so. There's a couple of
+
+345
+00:35:15,216 --> 00:35:21,146
+little corner cases that are exclusive to
+multiple interpreters, but mostly all
+
+346
+00:35:21,186 --> 00:35:25,633
+the same things you face there you face
+with multiple interpreters. So pretty
+
+347
+00:35:25,673 --> 00:35:32,816
+much all the work that people are going to
+have to do to use to be compatible with free
+
+348
+00:35:32,856 --> 00:35:37,967
+threading in extension modules is the
+work that they'll have to do to support
+
+349
+00:35:38,187 --> 00:35:44,801
+isolated extent interpreters, which is
+Which is nice. And people, it seems like a
+
+350
+00:35:44,842 --> 00:35:48,748
+lot of people are more motivated to
+support free threading than they are to
+
+351
+00:35:48,788 --> 00:35:53,677
+support multiple interpreters at this
+point. So, you know, I expect that will
+
+352
+00:35:53,717 --> 00:35:59,206
+change as time goes by, but it's nice that
+there's a little more motivation for
+
+353
+00:35:59,266 --> 00:36:05,977
+people to do all this work. Okay, since
+we've touched free threading, let's
+
+354
+00:36:06,037 --> 00:36:10,425
+discuss the differences and the
+possibilities of these two features
+
+355
+00:36:10,465 --> 00:36:14,652
+working together. In my opinion, I will
+share my opinion on free threading is that
+
+356
+00:36:15,133 --> 00:36:18,419
+using threading is very hard because of
+the data races, because of the
+
+357
+00:36:18,579 --> 00:36:25,848
+immutability nature of CPython. And I
+think that I'm coming from Erlang as a
+
+358
+00:36:25,868 --> 00:36:31,133
+background. I really like actor model and
+I really like immutable data structures.
+
+359
+00:36:31,674 --> 00:36:36,178
+And it's really hard for me to think about
+mutability, about adding locks, about
+
+360
+00:36:36,519 --> 00:36:40,743
+adding mutexes and all of this
+synchronization primitives to all of
+
+361
+00:36:40,823 --> 00:36:46,809
+your code base. And what subinterpreters
+solve for me is that it frees me from this
+
+362
+00:36:46,869 --> 00:36:52,777
+problem. Do you agree on that? Yeah. So
+it's, it's interesting when you think
+
+363
+00:36:52,837 --> 00:36:57,263
+about threading there, there's lots of
+great things that it brings and that's why
+
+364
+00:36:57,303 --> 00:37:04,714
+people, why it's existed for decades and
+decades. Right. Um, but there's lots of
+
+365
+00:37:04,794 --> 00:37:09,561
+well-known problems. Like you're
+saying, the data races, you have a whole
+
+366
+00:37:09,601 --> 00:37:15,449
+program in your, your process and all
+threads in that process share all of the
+
+367
+00:37:15,49 --> 00:37:22,804
+memory and all the resources in that
+process. And, um, you have no guarantees
+
+368
+00:37:22,964 --> 00:37:29,712
+about what data code running in a given
+thread is going to access, maybe mutate,
+
+369
+00:37:29,893 --> 00:37:35,44
+whatever. When you write a program,
+there's the data that you're using, and
+
+370
+00:37:35,64 --> 00:37:41,928
+you can try and be disciplined about
+making sure that any data that you're
+
+371
+00:37:42,048 --> 00:37:46,874
+using in multiple threads, you're very
+careful about. You practice all sorts of
+
+372
+00:37:46,914 --> 00:37:53,401
+thread safety to make sure that you don't
+run into problems. And so you do that, but
+
+373
+00:37:53,441 --> 00:37:59,828
+then you also have to make sure that you
+don't share any other data accidentally
+
+374
+00:37:59,868 --> 00:38:04,734
+between threads. You have to make sure
+that any dependencies you have, any
+
+375
+00:38:04,834 --> 00:38:13,083
+libraries, likewise, are thread safe.
+And because all data that they're using is
+
+376
+00:38:13,163 --> 00:38:20,44
+exposed to thread safety issues. And so
+like it just doesn't fit in the human
+
+377
+00:38:20,48 --> 00:38:28,916
+brain. And plus the idea of threads
+running at the same time and they're doing
+
+378
+00:38:28,956 --> 00:38:32,462
+stuff and you don't really have any
+natural synchronization between them.
+
+379
+00:38:33,183 --> 00:38:36,65
+It's really hard for the brain to think
+about. It's just not really suited to
+
+380
+00:38:36,73 --> 00:38:43,191
+human beings. So these problems really
+make it a challenge. And it's a lot better
+
+381
+00:38:43,211 --> 00:38:51,625
+if you can take this idea of, oh, threads,
+they're sharing all data in the process,
+
+382
+00:38:51,866 --> 00:38:56,814
+and you narrow it down to, I explicitly
+control what data threads might be
+
+383
+00:38:56,855 --> 00:39:06,399
+sharing. it, but you explicitly opt into
+what data you're sharing. And that's
+
+384
+00:39:06,459 --> 00:39:11,307
+essentially what's involved with
+multiple interpreters. Because what
+
+385
+00:39:11,347 --> 00:39:16,775
+you're doing is by default, they're
+isolated. And then any mechanism that you
+
+386
+00:39:16,895 --> 00:39:22,563
+use to pass data between them, whether
+it's objects or anything else, you have to
+
+387
+00:39:22,623 --> 00:39:33,822
+explicitly have to explicitly say this
+mechanism that I'm adding to communicate
+
+388
+00:39:33,862 --> 00:39:39,348
+between interpreters, well, you have to
+explicitly say, OK, this data that I'm
+
+389
+00:39:39,388 --> 00:39:46,717
+passing in, I know how to keep that safe
+between the interpreters. And I know how
+
+390
+00:39:47,037 --> 00:39:50,981
+to keep it safe if I'm sharing it between
+interpreters. I'm explicitly managing
+
+391
+00:39:51,041 --> 00:39:57,587
+that. And so I can manage that narrow area
+between interpreters a lot better than
+
+392
+00:39:57,667 --> 00:40:02,635
+managing all the possible data sharing
+that's going on between threads in the
+
+393
+00:40:02,755 --> 00:40:09,926
+whole space of the program. Explicit is
+always better than implicit. Yeah. Do you
+
+394
+00:40:09,966 --> 00:40:15,839
+have use cases where they work together
+better than just a single one? Okay, so
+
+395
+00:40:16,36 --> 00:40:19,965
+first of all, I'll point out, and I
+mentioned this kind of earlier, is you
+
+396
+00:40:20,005 --> 00:40:25,413
+don't run in an interpreter, you run in a
+thread, right? So all you're doing is
+
+397
+00:40:25,453 --> 00:40:29,819
+switching between threads. So to use
+multiple interpreters, you have to use,
+
+398
+00:40:29,939 --> 00:40:34,326
+well, you don't have to use, but to make
+best use of it, you're using multiple
+
+399
+00:40:34,366 --> 00:40:38,021
+threads. So if you want multiple
+interpreters running at the same time,
+
+400
+00:40:38,041 --> 00:40:41,425
+you have to have multiple threads running
+at the same time. You're running one
+
+401
+00:40:41,485 --> 00:40:45,21
+thread and you switch to the other
+interpreter in that thread and you run
+
+402
+00:40:45,25 --> 00:40:51,117
+relative to that interpreter. So you
+can't really make use of multiple
+
+403
+00:40:51,137 --> 00:40:56,644
+interpreters without threads. But what
+multiple interpreters is doing is giving
+
+404
+00:40:56,664 --> 00:41:01,67
+you the isolation with threads so that the
+threads can't escape out of the
+
+405
+00:41:01,73 --> 00:41:06,455
+interpreters. They're not going to be
+making use of the data of the whole
+
+406
+00:41:06,795 --> 00:41:11,041
+program. They're going to make use of just
+the data in the interpreter. Otherwise,
+
+407
+00:41:11,862 --> 00:41:16,288
+I'm not sure about the best solution. So
+I've been working on some how-to
+
+408
+00:41:16,328 --> 00:41:20,914
+documents for this stuff. And some of the
+examples that I've written involve, OK,
+
+409
+00:41:20,934 --> 00:41:28,565
+I'm going to create a thread that's going
+to queue up stuff or whatever. And I'm
+
+410
+00:41:28,585 --> 00:41:34,556
+going to use a thread for that because I'm
+going to make use of, it's a really simple
+
+411
+00:41:34,676 --> 00:41:39,764
+use case for threads, and great. Threads
+are pretty simple and easy to use. With
+
+412
+00:41:39,984 --> 00:41:43,049
+multiple interpreters, you have to think
+about the boundary between the
+
+413
+00:41:43,069 --> 00:41:47,977
+interpreters. And because they're
+isolated, you have to think, okay, if I'm
+
+414
+00:41:48,017 --> 00:41:51,923
+going to communicate between these
+interpreters, how am I going to
+
+415
+00:41:51,983 --> 00:41:55,882
+communicate? At what points am I going to
+communicate between interpreters? And
+
+416
+00:41:55,902 --> 00:41:58,526
+it's kind of a point of synchronization.
+And you have to think a little bit
+
+417
+00:41:58,586 --> 00:42:03,073
+differently. You can't just like, oh, I'm
+just going to modify this variable. And
+
+418
+00:42:03,133 --> 00:42:09,263
+suddenly my other thread is going to be
+able to use that. You have to explicitly
+
+419
+00:42:09,323 --> 00:42:13,83
+say, OK, I'm sending this stuff over to the
+other interpreter. And now it's going to
+
+420
+00:42:13,87 --> 00:42:19,979
+do its thing with that data, et cetera. In
+some cases, it's simpler to use a thread to
+
+421
+00:42:20,52 --> 00:42:24,922
+kind of set things up. and then use the
+interpreter to do the actual isolated
+
+422
+00:42:25,002 --> 00:42:30,549
+work so that you have those carefully
+managed boundaries and the isolation
+
+423
+00:42:30,589 --> 00:42:34,835
+that provides you that conceptual
+benefit. It's just so much easier to think
+
+424
+00:42:34,895 --> 00:42:42,004
+about these isolated threads of
+operation with very distinct points at
+
+425
+00:42:42,064 --> 00:42:46,222
+which you're communicating and
+synchronizing between them. Are you
+
+426
+00:42:46,263 --> 00:42:52,493
+familiar with Erlang and its ecto model?
+Not a lot. I mean, there's a lot of
+
+427
+00:42:52,694 --> 00:43:00,026
+conceptual similarities here. With
+Erlang, it's really more fundamental to
+
+428
+00:43:00,066 --> 00:43:05,896
+how it operates, whereas Python is just
+one of the various different ways that you
+
+429
+00:43:05,936 --> 00:43:11,796
+can do concurrency. I am very fascinated
+about the idea that you can create this
+
+430
+00:43:11,896 --> 00:43:16,101
+kind of isolation between different
+interpreters, and you can send messages
+
+431
+00:43:16,121 --> 00:43:21,487
+to different parts of your program. And
+you can do it in Erlang, you can do it in two
+
+432
+00:43:21,527 --> 00:43:26,172
+ways. You can do it asynchronously, so you
+just send a message and forget about it, or
+
+433
+00:43:26,212 --> 00:43:31,237
+you can wait for the reply back. So
+basically you have two options, and you
+
+434
+00:43:31,278 --> 00:43:37,304
+can decide on what logic you want to prefer
+in this specific case. I would love to see
+
+435
+00:43:37,344 --> 00:43:45,275
+something like that in CPython. Maybe
+someone will contribute it to maybe the
+
+436
+00:43:45,316 --> 00:43:49,822
+core of Python or maybe to some other
+third-party library. It will be amazing
+
+437
+00:43:49,862 --> 00:43:56,511
+to see. Well, that's the beauty of it. With
+where we're at now, all of the foundation
+
+438
+00:43:56,551 --> 00:44:01,318
+is in place where now people can build on
+that. They can do exactly the stuff you're
+
+439
+00:44:01,338 --> 00:44:05,24
+talking about and they should be able to do
+it through extension modules. So it's
+
+440
+00:44:05,62 --> 00:44:12,269
+it's something that is an option right
+now. In fact, part of so early on, it became
+
+441
+00:44:12,349 --> 00:44:18,156
+clear that exposing multiple
+interpreters to Python code through a
+
+442
+00:44:18,196 --> 00:44:27,368
+standard library module was useful in
+some ways, but it was much more useful if
+
+443
+00:44:27,408 --> 00:44:32,377
+there was a way to actually communicate
+between interpreters. So early on, I
+
+444
+00:44:32,578 --> 00:44:39,247
+added a functionality. Originally, I
+added channels, kind of like CSP, which is
+
+445
+00:44:39,307 --> 00:44:45,395
+communicating sequential processes
+from back in the 60s. And it's still a part
+
+446
+00:44:45,455 --> 00:44:52,2
+of various programming languages, a lot
+of inspiration there. Early, yeah, and Go
+
+447
+00:44:52,221 --> 00:44:58,191
+has channels, although we could talk
+about that too. I have thoughts there. So
+
+448
+00:44:59,053 --> 00:45:03,982
+channels, I implemented channels for
+this and you could pass things between
+
+449
+00:45:04,262 --> 00:45:08,69
+channels or between interpreters using
+channels. So it kind of managed that space
+
+450
+00:45:08,791 --> 00:45:15,445
+in between interpreters, kept thread
+safety and all that. And mostly it would
+
+451
+00:45:15,485 --> 00:45:20,529
+support making copies of objects
+efficiently, but copies nonetheless. So
+
+452
+00:45:20,549 --> 00:45:26,454
+it didn't actually share objects between
+interpreters. Eventually, I realized
+
+453
+00:45:26,554 --> 00:45:30,398
+it'd probably be better to start with
+something more familiar like queues,
+
+454
+00:45:30,758 --> 00:45:36,843
+like the queue module. So Q.Queue made the
+implementation of queue that supports
+
+455
+00:45:38,625 --> 00:45:47,818
+passing data between interpreters. That
+was part of 7.3.4, which is kind of the
+
+456
+00:45:47,978 --> 00:45:54,847
+replacement for PEP 5.5.4, which I had
+originally. PEP 7.3.4 was a bit simpler,
+
+457
+00:45:55,548 --> 00:46:03,198
+and it had these queues. So right now in
+3.14, you can use these queues to pass data
+
+458
+00:46:03,278 --> 00:46:11,324
+between interpreters. There are some
+objects where it will actually When you
+
+459
+00:46:11,424 --> 00:46:16,111
+send something through a queue, it will,
+on the other side, when it gets pulled out
+
+460
+00:46:16,151 --> 00:46:22,42
+of the queue, it won't make an actual copy.
+It'll make a new object, but the object
+
+461
+00:46:22,52 --> 00:46:30,232
+will wrap the underlying data. So that's
+the case for these queues. through a
+
+462
+00:46:30,292 --> 00:46:39,832
+queue, on the other side you get a queue
+that uses the same underlying data, the
+
+463
+00:46:40,133 --> 00:46:47,047
+actual raw queue that is implemented in C.
+So it'll actually get shared in both
+
+464
+00:46:47,127 --> 00:46:52,585
+interpreters and that way you can pull
+stuff through a queue. The other thing
+
+465
+00:46:52,885 --> 00:46:58,313
+where it actually shares the underlying
+data is memory view, which is interesting
+
+466
+00:46:58,533 --> 00:47:06,724
+because this way, if you have a bytes
+object or a byte array, or you have a NumPy
+
+467
+00:47:07,004 --> 00:47:12,712
+array, or anything that influence the
+buffer protocol, you can share those, you
+
+468
+00:47:13,133 --> 00:47:17,623
+wrap it in a memory view, and then you share
+the memory view across, And on the other
+
+469
+00:47:17,683 --> 00:47:23,067
+side of the queue, you'll get a memory
+view, a memory view that wraps that same
+
+470
+00:47:23,107 --> 00:47:32,675
+buffer. So now, well, pretty much no
+objects are actually shared between
+
+471
+00:47:32,735 --> 00:47:40,001
+interpreters, and most mutable objects
+are actually copied. Still, there is this
+
+472
+00:47:40,141 --> 00:47:44,765
+one data type, memory view, where the
+underlying data is actually shared, and
+
+473
+00:47:44,845 --> 00:47:50,466
+you could potentially use that to
+communicate between stuff. You can share
+
+474
+00:47:50,506 --> 00:47:55,445
+NumPy arrays between interpreters,
+which is kind of a big deal because the
+
+475
+00:47:55,787 --> 00:48:03,392
+alternatives are a little trickier. Like
+with multiple processes, you can't
+
+476
+00:48:03,432 --> 00:48:08,099
+really copy NumPy arrays and there's all
+sorts of trickiness there. So it's
+
+477
+00:48:08,499 --> 00:48:14,568
+provides a bunch of efficiency. If we
+didn't support sharing the underlying
+
+478
+00:48:14,648 --> 00:48:21,658
+data of memory view, then
+sub-interpreters would be probably
+
+479
+00:48:21,698 --> 00:48:28,988
+maybe less powerful in certain
+situations. But the catch is that if
+
+480
+00:48:29,029 --> 00:48:32,653
+you're doing that, you still have to worry
+about threat safety. Because now these
+
+481
+00:48:32,713 --> 00:48:36,819
+two interpreters don't share a gill. They
+don't have any threat safety between
+
+482
+00:48:36,879 --> 00:48:44,549
+them. So now if you're writing to this
+memory view on the one side, and you're
+
+483
+00:48:44,589 --> 00:48:48,274
+writing to it on the other, now you have all
+the threat safety issues. So you have to
+
+484
+00:48:48,334 --> 00:48:51,638
+manage that carefully. It isn't too hard,
+but you're opting into it. That's the key
+
+485
+00:48:51,658 --> 00:48:57,526
+thing. You're opting into it. I was about
+to ask you, is that true for all buffers,
+
+486
+00:48:57,926 --> 00:49:03,453
+readable buffers and writable buffers?
+And I suppose it is true for both of them,
+
+487
+00:49:03,753 --> 00:49:08,699
+yes? Well, so the buffer protocol, it
+provides a mechanism for you to say, this
+
+488
+00:49:08,759 --> 00:49:13,905
+is a read-only buffer, but there's no
+restriction. I mean, you're sharing that
+
+489
+00:49:13,965 --> 00:49:18,53
+memory. So there's no, in practice,
+there's no restriction. It's up to the
+
+490
+00:49:18,651 --> 00:49:25,499
+user of the buffer. to say whether or not if
+it's actually going to get modified. So I
+
+491
+00:49:25,559 --> 00:49:34,755
+think we may have, I don't, I'd have to look
+at it, but I think at least initially I made
+
+492
+00:49:34,815 --> 00:49:41,125
+it so that it rejects buffers that aren't
+marked as read-only. But I don't
+
+493
+00:49:41,185 --> 00:49:50,016
+remember. Maybe I relaxed that. I don't
+remember it. But either way, it doesn't
+
+494
+00:49:50,176 --> 00:49:54,822
+keep that shared data from getting
+modified at all. When we compare two cases
+
+495
+00:49:54,902 --> 00:50:01,45
+of sharing objects that are complex
+objects, some custom ones, we compare two
+
+496
+00:50:01,611 --> 00:50:05,636
+use cases. One of them is
+multiprocessing, and the second one is
+
+497
+00:50:05,716 --> 00:50:13,849
+subinterpreters. Which one is faster,
+obviously? Subinterpreters. So it has a
+
+498
+00:50:13,969 --> 00:50:19,677
+lot of the benefits of threads with the
+isolation of multiple processes.
+
+499
+00:50:21,098 --> 00:50:25,444
+Multiprocessing itself is a bit
+complicated if you use a
+
+500
+00:50:25,504 --> 00:50:31,792
+concurrent.futures. So that simplifies
+the whole thing a bit. And for most use
+
+501
+00:50:31,832 --> 00:50:39,001
+cases, concurrent.futures is probably
+what you want. But using multiprocessing
+
+502
+00:50:39,061 --> 00:50:47,697
+itself, As a module, it's not the simplest
+thing to use. But as far as efficiency
+
+503
+00:50:47,757 --> 00:50:54,084
+goes, there are a variety of ways in which
+multiple interpreters is more efficient
+
+504
+00:50:54,244 --> 00:51:02,493
+than multiple processes. And depending
+on the platform, especially faster. I
+
+505
+00:51:02,513 --> 00:51:08,3
+mean, on Windows, there are a variety of
+reasons why multiple processes is a lot
+
+506
+00:51:08,34 --> 00:51:17,374
+slower or less efficient than working
+within the same process. So there's
+
+507
+00:51:17,654 --> 00:51:22,559
+things like communicating between
+processes and communicating between
+
+508
+00:51:22,639 --> 00:51:26,664
+interpreters. Between interpreters can
+be a lot more efficient for a variety of
+
+509
+00:51:26,724 --> 00:51:33,13
+reasons. And right now with, with in 3.14,
+the implementation as it is, is more
+
+510
+00:51:33,17 --> 00:51:38,076
+efficient than multiprocessing, but
+it's also, there's a lot of room to make
+
+511
+00:51:38,116 --> 00:51:44,208
+that substantially more efficient. Uh,
+we're not there yet. We'll get there. But
+
+512
+00:51:44,728 --> 00:51:55,006
+it's just faster, starting multiple
+interpreters faster. You can use more
+
+513
+00:51:55,046 --> 00:52:00,536
+interpreters than you can processes
+generally. When you're using multiple
+
+514
+00:52:00,596 --> 00:52:07,308
+processes, each process has a set of
+system resources that are allocated to
+
+515
+00:52:07,408 --> 00:52:13,765
+it. where those resources can be fairly
+limited. A number of processes or process
+
+516
+00:52:13,826 --> 00:52:20,38
+IDs, or to some degree, there's a variety
+of other resources I don't recall
+
+517
+00:52:20,421 --> 00:52:25,093
+offhand. And when you're using multiple
+interpreters in the same process,
+
+518
+00:52:26,014 --> 00:52:30,34
+they're all sharing those particular
+resources. And so those don't get
+
+519
+00:52:30,421 --> 00:52:37,071
+exhausted on the system. At certain
+degrees of scale, there are certain
+
+520
+00:52:37,131 --> 00:52:41,858
+projects that have run into those limits
+when using multiple processes that they
+
+521
+00:52:41,898 --> 00:52:46,104
+would not run into if they're using
+multiple interpreters, but without
+
+522
+00:52:46,164 --> 00:52:53,793
+sacrificing the degree of isolation.
+Okay. This sounds amazing because I think
+
+523
+00:52:53,853 --> 00:53:00,39
+a lot of people are very upset about their
+memory usage of multiprocessing and they
+
+524
+00:53:00,43 --> 00:53:05,663
+want their computations faster and
+basically it was their only way to do it.
+
+525
+00:53:05,643 --> 00:53:11,315
+And now they have options. It's really
+cool. One more thing that we should really
+
+526
+00:53:11,375 --> 00:53:21,054
+talk about is AsyncIO, because it is also
+related to IO tasks optimization. And
+
+527
+00:53:21,095 --> 00:53:29,729
+right now, AsyncIO is only working one
+process in one thread, and basically it
+
+528
+00:53:29,749 --> 00:53:38,181
+has one GIL, and there is no room for it to be
+scaled. How can we improve AsyncIO
+
+529
+00:53:38,421 --> 00:53:44,91
+performance with subinterpreters?
+Yeah, that's a good question. I haven't
+
+530
+00:53:44,95 --> 00:53:51,499
+given it a lot of thought, but what I know
+about AsyncIO, there's basically that
+
+531
+00:53:51,519 --> 00:53:58,802
+you have your event loop or your, is it an
+event loop? Yes. So you have your event
+
+532
+00:53:58,822 --> 00:54:10,981
+loop. You can use multiple threads with
+async is problematic and I'm not aware of
+
+533
+00:54:11,321 --> 00:54:17,891
+that actually working properly. Maybe
+people do it or maybe that works to some
+
+534
+00:54:17,951 --> 00:54:24,76
+extent, but there's some interpreter
+global state that gets in the way of that
+
+535
+00:54:24,86 --> 00:54:30,949
+working the right way. If you have an event
+loop running one in each interpreter,
+
+536
+00:54:31,79 --> 00:54:39,949
+then the only obstacle you have is getting
+the data from the one interpreter to the
+
+537
+00:54:40,049 --> 00:54:45,678
+other, which is something we're solving
+independently anyway. And so now all we
+
+538
+00:54:45,718 --> 00:54:54,914
+need is just a piece where we can plug into
+AsyncIO the ability to yield out of a, or
+
+539
+00:54:55,374 --> 00:55:02,317
+await from an interpreter. That doesn't
+exist right now. It's something that I'm
+
+540
+00:55:02,437 --> 00:55:07,124
+sure people will look at. But awaiting
+from like one of these cross interpreter
+
+541
+00:55:07,204 --> 00:55:11,09
+queues, I don't see why that wouldn't be
+feasible. Maybe have an abstraction
+
+542
+00:55:11,15 --> 00:55:17,039
+around an event loop running in another
+interpreter, and then you can await from
+
+543
+00:55:17,099 --> 00:55:25,259
+that object or I don't know. I'm not sure
+exactly the practicality of it. but I'm
+
+544
+00:55:25,299 --> 00:55:29,946
+not aware of any obstacles to people
+figuring that out. And I don't know that it
+
+545
+00:55:29,986 --> 00:55:35,014
+would be that hard. I also don't know what
+the use cases are necessarily for taking
+
+546
+00:55:35,054 --> 00:55:40,061
+advantage of asyncIO plus
+subinterpreters, but I'm sure there are
+
+547
+00:55:40,121 --> 00:55:48,889
+some. It sounds like a really fun research
+project. I think it will be very big in
+
+548
+00:55:48,949 --> 00:55:54,077
+terms of popularity and hype because a lot
+of people love AsyncIO and they love
+
+549
+00:55:55,159 --> 00:56:01,869
+scaling it up. You can be a hero of Python.
+It's interesting, if you go look at
+
+550
+00:56:01,929 --> 00:56:07,35
+pep554, that's the original one for the
+standard library module. And a big reason
+
+551
+00:56:07,41 --> 00:56:13,077
+why I created a new PEP is because 5.5.4 was
+getting really big. And a big part of that
+
+552
+00:56:13,237 --> 00:56:20,907
+was because I had a long section of all the
+things that were not a part of PEP 5.5.4. If
+
+553
+00:56:20,947 --> 00:56:25,673
+I remember right, one of those things was
+supporting AsyncIO with
+
+554
+00:56:25,713 --> 00:56:29,598
+subinterpreters like we're talking
+about. That was one thing I said, well,
+
+555
+00:56:29,678 --> 00:56:36,193
+we're not going to try and solve that here.
+So now is a great time for people to start
+
+556
+00:56:36,233 --> 00:56:41,601
+thinking about how to solve that. One more
+big topic that we haven't touched yet is
+
+557
+00:56:42,082 --> 00:56:49,513
+garbage collection. So GC really doesn't
+factor in a whole lot. Each interpreter
+
+558
+00:56:49,553 --> 00:56:53,439
+has its own garbage collection. Each
+interpreter has its own set of objects.
+
+559
+00:56:53,739 --> 00:57:02,737
+There really isn't any room for objects to
+be shared between interpreters, objects
+
+560
+00:57:02,777 --> 00:57:07,563
+that are owned by an interpreter. Maybe
+someday we'll solve that. That's
+
+561
+00:57:07,603 --> 00:57:11,808
+something to look into. But with kind of
+this foundation in place, that isn't part
+
+562
+00:57:11,868 --> 00:57:19,537
+of it. And because of that, objects are
+garbage collected by the interpreter
+
+563
+00:57:19,637 --> 00:57:26,044
+that owns them. The key thing is if we have
+any references to an object that are
+
+564
+00:57:27,105 --> 00:57:32,974
+owned, the references are owned, by
+another interpreter. And there are ways
+
+565
+00:57:33,034 --> 00:57:40,665
+of doing that. We do that in some cases.
+Well, those objects, the original
+
+566
+00:57:40,825 --> 00:57:46,513
+object, its ref count reflects that. So
+the reference owned by the other
+
+567
+00:57:46,533 --> 00:57:54,97
+interpreter is reflected by a larger ref
+count over in the original object. And
+
+568
+00:57:55,03 --> 00:57:59,842
+because of that, that object will never
+get ref counted until the other
+
+569
+00:57:59,902 --> 00:58:05,315
+interpreter releases that reference. So
+garbage collection doesn't really come
+
+570
+00:58:05,335 --> 00:58:11,814
+into play while another interpreter
+holds a reference to the object. the
+
+571
+00:58:11,874 --> 00:58:17,46
+original object. So how can we make
+subinterpreters faster? How can we make
+
+572
+00:58:18,141 --> 00:58:23,927
+them use less memory? And how can we
+improve different parts of the
+
+573
+00:58:23,967 --> 00:58:28,792
+performance? How you would use less
+memory? There are lots of possibilities.
+
+574
+00:58:29,452 --> 00:58:37,04
+One of the things I want to try is, so find a
+way to share modules between
+
+575
+00:58:37,1 --> 00:58:44,386
+interpreters. and to share types between
+interpreters. If we can solve those two,
+
+576
+00:58:44,707 --> 00:58:49,794
+and because the number of types and the
+number of modules is relatively small
+
+577
+00:58:50,335 --> 00:58:56,103
+compared to the number of objects in an
+interpreter, then it should be
+
+578
+00:58:56,143 --> 00:59:00,25
+manageable. So if we made those shared, it
+simplifies the number of things. And it
+
+579
+00:59:00,37 --> 00:59:09,588
+also means that the memory of the types and
+of the modules is shared and so we aren't
+
+580
+00:59:09,828 --> 00:59:13,775
+duplicating that memory. We're using
+less memory therefore. Another option is
+
+581
+00:59:14,636 --> 00:59:20,606
+kind of an idea of copy on write. So
+introduce into the Python
+
+582
+00:59:20,646 --> 00:59:26,436
+implementation some copy on write
+mechanism where we're sharing this
+
+583
+00:59:26,476 --> 00:59:30,061
+stuff. So the main interpreter has a whole
+bunch of stuff, a whole bunch of objects
+
+584
+00:59:30,082 --> 00:59:36,718
+and other data. And when we create a
+subinterpreter, have it hold references
+
+585
+00:59:36,758 --> 00:59:41,435
+to the original stuff. But if anything
+gets modified, then it creates a copy,
+
+586
+00:59:41,455 --> 00:59:47,197
+just like normal copy and write
+mechanism. That could also help a lot. One
+
+587
+00:59:47,317 --> 00:59:53,624
+option is there's a mechanism used in
+Xemax, and not just in Xemax, it's used in a
+
+588
+00:59:53,644 --> 01:00:00,171
+variety of projects. But the idea is at a
+certain stable point in your program's
+
+589
+01:00:00,251 --> 01:00:08,66
+operation, you take a snapshot of memory.
+And you also have, you process that
+
+590
+01:00:08,7 --> 01:00:14,879
+snapshot, identify offsets into
+different things so that that from this
+
+591
+01:00:14,979 --> 01:00:21,105
+pointer is to this thing, but it's
+actually this offset from this other
+
+592
+01:00:21,145 --> 01:00:26,31
+thing in our snapshot of the memory. So now
+you have the snapshot, you save it away
+
+593
+01:00:26,41 --> 01:00:31,696
+onto disk. And now when you start up, you
+load that snapshot. It's like statically
+
+594
+01:00:31,816 --> 01:00:38,282
+allocated. It's m-mapped in and it's
+really fast, right? And now you have the
+
+595
+01:00:38,322 --> 01:00:43,871
+snapshot, you fix up pointers, based on
+these offsets to the references and all
+
+596
+01:00:43,931 --> 01:00:51,058
+that. And now you have your memory in the
+state that it was when you ran it the first
+
+597
+01:00:51,118 --> 01:00:55,563
+time and captured the snapshot. So now
+it's kind of restored back to that state,
+
+598
+01:00:56,163 --> 01:01:04,572
+which is almost exclusively going to be
+the same as every time you start up Python.
+
+599
+01:01:04,873 --> 01:01:09,551
+It's pretty much like virtual machines
+do. Yeah. Yeah, pretty much, except with
+
+600
+01:01:09,591 --> 01:01:14,339
+them, they don't have to fix up the
+pointers and all that. It's the sort of
+
+601
+01:01:14,379 --> 01:01:20,328
+thing that has to happen when the
+operating system's loading a program. So
+
+602
+01:01:20,388 --> 01:01:27,66
+there's lots of prior art on how to solve
+this. And so that's one thing. That means
+
+603
+01:01:27,84 --> 01:01:34,879
+that that you would start up an
+interpreter based on this snapshot. And
+
+604
+01:01:35,039 --> 01:01:40,028
+maybe, you know, you'd have to sort out
+copying or copy and write or whatever. But
+
+605
+01:01:40,749 --> 01:01:47,201
+so startup would be a lot faster. You'd use
+less memory. And there are a number of
+
+606
+01:01:47,221 --> 01:01:54,085
+other benefits too. So that would, and not
+only that, but it would also just make
+
+607
+01:01:54,145 --> 01:01:59,818
+Python startup faster, which would
+benefit everybody. As far as sharing data
+
+608
+01:01:59,858 --> 01:02:04,208
+between interpreters, you know, the
+implementation that I did for that, for
+
+609
+01:02:04,248 --> 01:02:11,736
+the queue is really naive. I focused on
+correctness. I think I got that right. But
+
+610
+01:02:11,796 --> 01:02:16,241
+I didn't really spend a lot of time making
+it fast. So there's probably a lot of
+
+611
+01:02:17,262 --> 01:02:21,846
+duplicated effort, a lot of extra locks
+involved, a lot of stuff that doesn't need
+
+612
+01:02:21,866 --> 01:02:26,991
+to be there. And so they could be made a lot
+faster. There's a mechanism that they
+
+613
+01:02:27,172 --> 01:02:32,757
+use. They try to essentially copy the
+object really efficiently. There's a
+
+614
+01:02:32,817 --> 01:02:36,841
+mechanism for efficient copying the
+objects for some objects. If that doesn't
+
+615
+01:02:36,861 --> 01:02:44,697
+work, it falls back. to pickle. And pickle
+is not super fast. So there are things that
+
+616
+01:02:44,737 --> 01:02:50,563
+we could do to make that use of pickle
+substantially faster, which would make
+
+617
+01:02:50,583 --> 01:02:57,449
+the communication between interpreters
+through cues a lot faster. But that hasn't
+
+618
+01:02:57,489 --> 01:03:01,553
+been done yet. It could also be done a bit
+more memory efficiently, although I
+
+619
+01:03:02,334 --> 01:03:09,013
+don't think it's too bad. Also, there's
+room for people to come mechanisms for
+
+620
+01:03:09,093 --> 01:03:14,838
+safely passing data or objects between
+interpreters. A lot of that stuff isn't
+
+621
+01:03:14,879 --> 01:03:20,804
+really going to require support from the
+runtime itself, which means that doing an
+
+622
+01:03:20,904 --> 01:03:25,489
+extension module is totally feasible.
+There's a lot of room to improve
+
+623
+01:03:25,549 --> 01:03:31,395
+efficiency, both memory and time
+efficiency for these different
+
+624
+01:03:31,435 --> 01:03:35,78
+mechanisms that we've built this
+foundation for. I also have one more
+
+625
+01:03:35,82 --> 01:03:41,369
+question about community work. What kind
+of packages, what kind of libraries do you
+
+626
+01:03:41,429 --> 01:03:47,999
+expect or maybe you hope to see one day?
+What ideas you want to highlight that
+
+627
+01:03:48,16 --> 01:03:53,228
+people might be interested in picking up?
+So it's interesting. I don't know that
+
+628
+01:03:53,288 --> 01:03:59,938
+there's really going to be a whole lot of
+cases where people are putting out tools
+
+629
+01:04:00,038 --> 01:04:05,575
+necessarily. where users are going to be
+using multiple interpreters directly.
+
+630
+01:04:05,836 --> 01:04:10,364
+There will, I'm sure there, there are
+cases where that makes sense. And I'm sure
+
+631
+01:04:10,424 --> 01:04:15,954
+we'll have some libraries like that. And
+like, you know, there's, um, I'm sure
+
+632
+01:04:16,014 --> 01:04:21,504
+people will come out with libraries that
+do CSP on top of multiple interpreters
+
+633
+01:04:21,625 --> 01:04:29,616
+with kind of a more explicit CSP API. or
+AcroModel or whatever. There's that, but
+
+634
+01:04:29,656 --> 01:04:35,064
+I expect that what'll end up happening is
+there'll be a lot of libraries that will
+
+635
+01:04:35,144 --> 01:04:38,829
+work to make use of multiple interpreters
+and people will keep using those
+
+636
+01:04:38,889 --> 01:04:42,814
+libraries the same way that they're
+already using them. Particularly like
+
+637
+01:04:42,914 --> 01:04:51,065
+with web frameworks. I can totally see how
+they could be adapted to use multiple
+
+638
+01:04:51,086 --> 01:04:57,487
+interpreters where they're handling
+each requests, lots of different options
+
+639
+01:04:57,547 --> 01:05:03,738
+that can go in that area. With data
+processing, kind of the same story. Maybe
+
+640
+01:05:03,798 --> 01:05:07,645
+if people are using threads directly
+currently, they would work towards
+
+641
+01:05:07,725 --> 01:05:12,553
+adopting multiple interpreters in the
+same way. There's already an interpreter
+
+642
+01:05:12,573 --> 01:05:17,145
+pool executor. which works just like a
+thread pull executor and process pull
+
+643
+01:05:17,165 --> 01:05:23,134
+executor. So people can switch to that
+already. I think a lot of the use of
+
+644
+01:05:23,214 --> 01:05:28,963
+multiple interpreters that we'll see in
+the shorter term will be on the one hand,
+
+645
+01:05:29,744 --> 01:05:36,814
+libraries kind of fitting them in under
+the hood. And on the other hand, maybe some
+
+646
+01:05:36,934 --> 01:05:44,509
+extra accommodation for for people that
+want to use them directly, which there are
+
+647
+01:05:44,549 --> 01:05:49,015
+some use cases where that makes sense. I
+think most people in their applications
+
+648
+01:05:50,057 --> 01:05:56,406
+won't be using them directly. I think
+where we'll see the most creative use of
+
+649
+01:05:56,426 --> 01:06:00,071
+multiple interpreters will actually be
+in the cases where people are
+
+650
+01:06:00,792 --> 01:06:04,798
+communicating between them, even
+passing objects or sharing objects even.
+
+651
+01:06:05,504 --> 01:06:09,287
+people are going to come up with libraries
+where they explore that and make use of
+
+652
+01:06:09,327 --> 01:06:17,475
+that, which I think there's lots of room
+for that in the community. Awesome. Thank
+
+653
+01:06:17,495 --> 01:06:24,521
+you. Do you have any social media you want
+to promote? Maybe some GitHub tickets
+
+654
+01:06:24,882 --> 01:06:33,189
+that you want to get help with? Not a whole
+lot. I mean, I'm working on a concurrency
+
+655
+01:06:33,229 --> 01:06:38,942
+how-to which I've been working on since
+the fall and kind of worked on it off and on.
+
+656
+01:06:39,964 --> 01:06:47,075
+I kind of put it to the side a couple months
+ago so I could focus on making sure the
+
+657
+01:06:48,116 --> 01:06:52,784
+standard library module stuff was ready
+to go. But that's something I'll be
+
+658
+01:06:52,804 --> 01:06:59,754
+getting back to. I can always use feedback
+on that. I will make sure you have the
+
+659
+01:07:01,297 --> 01:07:07,203
+GitHub number, I mean, if you just search
+for a GitHub issue about a concurrency
+
+660
+01:07:07,263 --> 01:07:14,233
+how-to, you'll find it. It will be right
+here. Nice. I'm also working right now. So
+
+661
+01:07:14,274 --> 01:07:17,078
+I'm adding documentation for the
+standard library module, which I had in
+
+662
+01:07:17,098 --> 01:07:24,629
+3.14. And I've landed most of the stuff. I
+think that's a pretty good state. But one
+
+663
+01:07:24,649 --> 01:07:28,735
+thing I wanted to make sure was that
+there's a how-to document specifically
+
+664
+01:07:29,356 --> 01:07:34,242
+for multiple interpreters. And I'm
+working on getting that landed probably
+
+665
+01:07:34,302 --> 01:07:39,749
+this week if things go well, but we'll see.
+So that's kind of a separate thing from the
+
+666
+01:07:39,809 --> 01:07:44,535
+general concurrency how-to.
+Concurrency how-to will involve a bunch
+
+667
+01:07:44,555 --> 01:07:50,803
+of comparisons on how you would solve some
+problems with the different concurrency
+
+668
+01:07:50,843 --> 01:07:54,808
+models and how the code looks and how it's
+different and how it's the same and so
+
+669
+01:07:54,848 --> 01:08:03,229
+forth. Whereas the sub-interpreters
+stuff, is gonna look a lot, it's gonna
+
+670
+01:08:03,27 --> 01:08:09,824
+focus just on multiple interpreters.
+I'll get you that link too. Awesome, it
+
+671
+01:08:09,865 --> 01:08:18,732
+will be over here as well. Nice. Thank you,
+Eric, for sharing your experience and the
+
+672
+01:08:18,792 --> 01:08:23,197
+history of subinterpreters and your
+insights into the future of this feature.
+
+673
+01:08:23,638 --> 01:08:28,884
+I'm really looking forward to using it in
+production. And I hope that our audience
+
+674
+01:08:28,924 --> 01:08:34,03
+will learn a lot from you and will speed up
+their computations. And there are your
+
+675
+01:08:34,11 --> 01:08:38,655
+tasks. So thanks for building it. And
+thanks for sharing. Yeah, thank you.
+
+676
+01:08:38,876 --> 01:08:41,719
+Thanks for having me. Nice. Bye bye.
