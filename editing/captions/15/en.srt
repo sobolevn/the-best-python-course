@@ -475,7 +475,7 @@ great stuff coming into this feature,
 
 96
 00:09:40,581 --> 00:09:44,485
-like Perinterpreter Guild and stuff like
+like Per-interpreter GIL and stuff like
 that. Can you please share all the
 
 97
@@ -756,7 +756,7 @@ Guild, ended up having to create a couple
 152
 00:15:35,552 --> 00:15:41,9
 more peps for that, including PEP 684,
-which is about the Perinterpreter Guild.
+which is about the per-interpreter GIL.
 
 153
 00:15:42,922 --> 00:15:51,701
@@ -785,7 +785,7 @@ concurrent.interpreters. That's the
 
 158
 00:16:17,722 --> 00:16:22,03
-string council wanted to put it there. I
+steering council wanted to put it there. I
 was going to just make it interpreters
 
 159
@@ -1441,7 +1441,7 @@ actual like static type itself. And so we
 289
 00:29:32,426 --> 00:29:38,475
 did that, but there's still the factor of
-the dunder dict and dunder subclasses and
+the __dict__ and __subclasses__ and
 
 290
 00:29:38,495 --> 00:29:44,064
@@ -1555,7 +1555,7 @@ module isolated are really
 
 312
 00:31:57,209 --> 00:32:01,561
-straightforward. Keep types. They're
+straightforward. Heap types. They're
 fine. They're not a lot of work, but
 
 313
@@ -2271,12 +2271,12 @@ implementation of queue that supports
 455
 00:45:38,625 --> 00:45:47,818
 passing data between interpreters. That
-was part of 7.3.4, which is kind of the
+was part of 734, which is kind of the
 
 456
 00:45:47,978 --> 00:45:54,847
 replacement for PEP 5.5.4, which I had
-originally. PEP 7.3.4 was a bit simpler,
+originally. PEP 734 was a bit simpler,
 
 457
 00:45:55,548 --> 00:46:03,198
@@ -2400,7 +2400,7 @@ about threat safety. Because now these
 
 481
 00:48:32,713 --> 00:48:36,819
-two interpreters don't share a gill. They
+two interpreters don't share a GIL. They
 don't have any threat safety between
 
 482
