@@ -10,11 +10,12 @@
 
 ## Tiling window managers
 
-- MacOS: https://github.com/rxhanson/Rectangle мой конфиг: https://github.com/sobolevn/dotfiles/blob/master/config/RectangleConfig.json
+- macos: https://github.com/rxhanson/Rectangle мой конфиг: https://github.com/sobolevn/dotfiles/blob/master/config/RectangleConfig.json
 - Windows: https://github.com/LGUG2Z/komorebi
 - Linux: ТЫСЯЧИ ИХ
 
 ## Полезности
 
 - Top Notch для macos: https://topnotch.app
+- HazeOver для macos: https://hazeover.com/ru
 - Brefile: https://docs.brew.sh/Brew-Bundle-and-Brewfile мой конфиг: https://github.com/sobolevn/dotfiles/blob/master/Brewfile
