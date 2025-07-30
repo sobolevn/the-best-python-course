@@ -11,6 +11,7 @@
 ## Tiling window managers
 
 - macos: https://github.com/rxhanson/Rectangle мой конфиг: https://github.com/sobolevn/dotfiles/blob/master/config/RectangleConfig.json
+- macos более продвинутая альтернатива: https://github.com/ianyh/Amethyst
 - Windows: https://github.com/LGUG2Z/komorebi
 - Linux: ТЫСЯЧИ ИХ
 
