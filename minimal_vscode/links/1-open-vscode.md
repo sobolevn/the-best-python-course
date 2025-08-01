@@ -19,4 +19,4 @@
 
 - Top Notch для macos: https://topnotch.app
 - HazeOver для macos: https://hazeover.com/ru
-- Brefile: https://docs.brew.sh/Brew-Bundle-and-Brewfile мой конфиг: https://github.com/sobolevn/dotfiles/blob/master/Brewfile
+- Brewfile: https://docs.brew.sh/Brew-Bundle-and-Brewfile мой конфиг: https://github.com/sobolevn/dotfiles/blob/master/Brewfile
