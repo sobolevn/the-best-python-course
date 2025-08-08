@@ -8,6 +8,7 @@
 Главные ссылки:
 - Вся конфигурация моя конфигурация для vscode: https://github.com/sobolevn/dotfiles/tree/master/vscode
 - Все мои плагины: https://github.com/sobolevn/dotfiles/blob/master/Brewfile#L185
+- Аналогичная конфигурация для [Zed IDE](https://zed.dev): https://github.com/skatromb/skatromb/tree/main/zed
 
 
 ## Принципы "Функционального минимализма"
