@@ -10,6 +10,11 @@
 - Все мои плагины: https://github.com/sobolevn/dotfiles/blob/master/Brewfile#L185
 
 
+## Альтернативные IDE с такими же конфигами
+
+- [Zed](https://zed.dev): https://github.com/skatromb/skatromb/tree/main/zed
+
+
 ## Принципы "Функционального минимализма"
 
 - Оставляем только нужное
