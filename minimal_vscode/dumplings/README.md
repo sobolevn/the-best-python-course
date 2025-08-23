@@ -21,5 +21,5 @@ chef serve --port 8000 --path .
 Запускаем через CLI:
 
 ```bash
-chef recipe <rece
+chef recipe <RECIPE_NAME>
 ```
