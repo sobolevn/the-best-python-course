@@ -1,0 +1,5 @@
+default_units = true
+warnings_as_errors = false
+recipe_ref_check = true
+max_depth = 10
+extensions = "all"
