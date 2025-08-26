@@ -23,3 +23,9 @@ chef serve --port 8000 --path .
 ```bash
 chef recipe <RECIPE_NAME>
 ```
+
+Или можно запустить UI в докере:
+
+```bash
+docker compose up
+```

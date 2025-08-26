@@ -1,0 +1,19 @@
+services:
+  chef:
+    ports:
+      - 8000:8000
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM rust:latest
+
+        RUN cargo install \
+          --git https://github.com/Zheoni/cooklang-chef \
+          --tag "v0.10.1" \
+          --locked
+
+        WORKDIR /dumplings
+
+        COPY . .
+
+        CMD ["chef", "serve", "--host", "--port", "8000", "--path", "."]
