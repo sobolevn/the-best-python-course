@@ -25,3 +25,4 @@
 ## Плагины
 
 - https://marketplace.visualstudio.com/items?itemName=subframe7536.custom-ui-style
+- https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig
